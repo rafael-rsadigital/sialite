@@ -190,36 +190,39 @@ export default function Avaliacao() {
   // Etapa 1: Coleta Neutra
   if (etapa === "coleta") {
     return (
-      <div className="min-h-screen bg-background py-8 px-4">
+      <div className="min-h-screen bg-slate-50 py-8 px-4">
         <div className="max-w-md mx-auto">
-          {/* Header - Nome da empresa */}
+          {/* Header Dinâmico e Personalizado */}
           <div className="text-center mb-10">
-            <h1 className="text-2xl font-bold text-foreground">
-              {empresa.nome_exibicao}
+            <h1 className="text-2xl font-bold text-foreground mb-3">
+              Obrigado por escolher a {empresa.nome_exibicao}!
             </h1>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Sua confiança em nosso trabalho é o que nos move. Conte-nos como foi sua experiência para continuarmos evoluindo.
+            </p>
           </div>
 
           {/* Card principal com Glassmorphism */}
-          <div className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-card p-8 border border-border/50">
+          <div className="bg-white rounded-3xl shadow-lg shadow-slate-200/50 p-8 border border-white/50">
             {/* Estrelas */}
             <div className="flex justify-center mb-8">
               <StarRating value={nota} onChange={setNota} />
             </div>
 
-            {/* Textarea opcional */}
+            {/* Textarea com sugestão estratégica */}
             <div className="mb-6">
               <Textarea
-                placeholder="Deixe um comentário (opcional)..."
+                placeholder="Dica: Cite o nome do produto ou serviço realizado e comente como foi sua experiência!"
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
-                className="min-h-[120px] resize-none rounded-2xl border-border/50 bg-background/50"
+                className="min-h-[120px] resize-none rounded-xl border-slate-200 bg-slate-50/80 focus:bg-white transition-colors duration-300 placeholder:text-slate-400"
               />
             </div>
 
-            {/* Botão com gradiente azul */}
+            {/* Botão com gradiente azul moderno */}
             <Button
               onClick={handleRegistrar}
-              className="w-full h-14 text-base font-semibold rounded-2xl btn-gradient-primary transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="w-full h-14 text-base font-bold rounded-2xl btn-gradient-primary transition-all duration-300 shadow-md hover:shadow-lg"
               size="lg"
             >
               Registrar Avaliação
