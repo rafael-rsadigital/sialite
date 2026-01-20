@@ -21,6 +21,7 @@ export type Database = {
           hash_secreto: string
           id: string
           link_google: string | null
+          modelo_sugestao: string | null
           nome_exibicao: string
           slug: string
           whatsapp_empresa: string | null
@@ -31,6 +32,7 @@ export type Database = {
           hash_secreto: string
           id?: string
           link_google?: string | null
+          modelo_sugestao?: string | null
           nome_exibicao: string
           slug: string
           whatsapp_empresa?: string | null
@@ -41,6 +43,7 @@ export type Database = {
           hash_secreto?: string
           id?: string
           link_google?: string | null
+          modelo_sugestao?: string | null
           nome_exibicao?: string
           slug?: string
           whatsapp_empresa?: string | null
