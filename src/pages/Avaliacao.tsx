@@ -273,19 +273,19 @@ export default function Avaliacao() {
             {/* Botão principal */}
             <Button
               onClick={handleCopyAndRedirect}
-              className="w-full h-14 text-base font-semibold rounded-2xl btn-gradient-primary transition-all duration-300 shadow-lg hover:shadow-xl gap-3"
+              className="w-full h-14 text-sm font-semibold rounded-2xl btn-gradient-primary transition-all duration-300 shadow-lg hover:shadow-xl gap-2"
               size="lg"
             >
               {copied ? (
                 <>
-                  <CheckCircle2 className="w-5 h-5" />
-                  Copiado! Abrindo Google...
+                  <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+                  <span>Copiado! Abrindo...</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-5 h-5" />
-                  Copiar Comentário e Avaliar no Google
-                  <ExternalLink className="w-4 h-4 ml-auto" />
+                  <Copy className="w-5 h-5 flex-shrink-0" />
+                  <span>Copiar e Avaliar no Google</span>
+                  <ExternalLink className="w-4 h-4 flex-shrink-0" />
                 </>
               )}
             </Button>
@@ -341,8 +341,7 @@ export default function Avaliacao() {
 
               <Button
                 onClick={handleFinalizar}
-                variant="secondary"
-                className="w-full h-14 text-base gap-3 rounded-2xl transition-all duration-300"
+                className="w-full h-14 text-base gap-3 rounded-2xl btn-gradient-primary transition-all duration-300 shadow-md hover:shadow-lg"
                 size="lg"
               >
                 Finalizar
