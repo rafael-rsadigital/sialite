@@ -85,6 +85,24 @@ export type Database = {
           },
         ]
       }
+      leads_teste: {
+        Row: {
+          created_at: string
+          id: string
+          nome_empresa: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome_empresa: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome_empresa?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
