@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Avaliacao from "./pages/Avaliacao";
 import Dashboard from "./pages/Dashboard";
+import AdminCadastro from "./pages/AdminCadastro";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/av/:slug" element={<Avaliacao />} />
           <Route path="/dashboard/:hash" element={<Dashboard />} />
+          <Route path="/admin-cadastro" element={<AdminCadastro />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
