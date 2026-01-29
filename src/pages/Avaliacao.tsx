@@ -181,10 +181,10 @@ export default function Avaliacao() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-cyan-400 opacity-50" />
-          <div className="h-4 w-32 bg-slate-200 rounded-full" />
+          <div className="w-12 h-12 rounded-xl bg-slate-200" />
+          <div className="h-3 w-24 bg-slate-200 rounded" />
         </div>
       </div>
     );
@@ -192,14 +192,14 @@ export default function Avaliacao() {
 
   if (!empresa) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-10 max-w-sm w-full text-center border border-slate-100">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center shadow-lg shadow-red-200">
-            <Star className="w-10 h-10 text-white" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="bg-white rounded-xl shadow-xl shadow-slate-200/40 p-10 max-w-sm w-full text-center border border-slate-100/80">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-slate-100 flex items-center justify-center">
+            <Star className="w-7 h-7 text-slate-400" strokeWidth={1.5} />
           </div>
-          <h1 className="text-xl font-bold text-slate-800">Empresa não encontrada</h1>
+          <h1 className="text-lg font-semibold text-slate-800">Empresa não encontrada</h1>
           <p className="mt-3 text-slate-500 text-sm">
-            Verifique se o link está correto e tente novamente.
+            Verifique se o link está correto.
           </p>
         </div>
       </div>
@@ -208,18 +208,18 @@ export default function Avaliacao() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-10 max-w-sm w-full text-center border border-slate-100 animate-fade-in">
-          <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-200">
-            <CheckCircle2 className="w-12 h-12 text-white" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="bg-white rounded-xl shadow-xl shadow-slate-200/40 p-10 max-w-sm w-full text-center border border-slate-100/80 animate-fade-in">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-slate-900 flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">Muito obrigado!</h1>
-          <p className="mt-3 text-slate-500">
+          <h1 className="text-xl font-semibold text-slate-800 tracking-tight">Obrigado pelo seu feedback</h1>
+          <p className="mt-3 text-slate-500 text-sm">
             Sua avaliação foi registrada com sucesso.
           </p>
           {isDemo && (
-            <p className="mt-4 text-xs text-blue-500 bg-blue-50 rounded-xl px-4 py-2">
-              🎭 Modo demonstração - nenhum dado foi salvo
+            <p className="mt-6 text-xs text-slate-500 bg-slate-100 rounded-lg px-4 py-2">
+              Modo demonstração — nenhum dado foi salvo
             </p>
           )}
         </div>
@@ -227,63 +227,62 @@ export default function Avaliacao() {
     );
   }
 
-  // Etapa 1: Coleta Neutra
+  // Etapa 1: Coleta Neutra e Elegante
   if (etapa === "coleta") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 py-10 px-4">
+      <div className="min-h-screen bg-slate-50 py-12 px-4">
         <div className="max-w-md mx-auto">
-          {/* Demo badge */}
+          {/* Demo badge - Discreto */}
           {isDemo && (
-            <div className="text-center mb-6 animate-fade-in">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-semibold shadow-lg shadow-blue-200">
-                🎭 Modo Demonstração
+            <div className="text-center mb-8 animate-fade-in">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-900 text-white text-xs font-medium">
+                Demonstração
               </span>
             </div>
           )}
 
-          {/* Header Dinâmico e Personalizado */}
-          <div className="text-center mb-10 animate-fade-in">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-4 leading-tight">
+          {/* Header - Limpo e Profissional */}
+          <div className="text-center mb-12 animate-fade-in">
+            <h1 className="text-xl sm:text-2xl font-semibold text-slate-800 mb-3 leading-tight tracking-tight">
               Obrigado por escolher a{" "}
-              <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+              <span className="text-slate-900 font-bold">
                 {empresa.nome_exibicao}
               </span>
-              !
             </h1>
-            <p className="text-slate-500 text-sm sm:text-base leading-relaxed max-w-sm mx-auto">
-              Sua confiança em nosso trabalho é o que nos move. Conte-nos como foi sua experiência para continuarmos evoluindo.
+            <p className="text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">
+              Sua opinião nos ajuda a melhorar continuamente.
             </p>
           </div>
 
-          {/* Card principal Premium */}
-          <div className="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/60 p-8 sm:p-10 border border-slate-100 animate-fade-in">
-            {/* Estrelas */}
-            <div className="flex justify-center mb-10">
+          {/* Card principal - Executivo */}
+          <div className="bg-white rounded-xl shadow-xl shadow-slate-200/40 p-8 sm:p-10 border border-slate-100/80 animate-fade-in">
+            {/* Estrelas com mais respiro */}
+            <div className="flex justify-center mb-12">
               <StarRating value={nota} onChange={setNota} />
             </div>
 
-            {/* Textarea com sugestão estratégica */}
-            <div className="mb-8">
+            {/* Textarea - Discreto */}
+            <div className="mb-10">
               <Textarea
-                placeholder="Dica: Cite o nome do produto ou serviço realizado e comente como foi sua experiência!"
+                placeholder="Conte-nos sobre sua experiência (opcional)"
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
-                className="min-h-[130px] resize-none rounded-2xl border-slate-200 bg-slate-50/80 focus:bg-white focus:border-blue-300 focus:ring-blue-100 transition-all duration-300 placeholder:text-slate-400 text-slate-700"
+                className="min-h-[120px] resize-none rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-300 focus:ring-slate-100 transition-all duration-200 placeholder:text-slate-400 text-slate-700 text-sm"
               />
             </div>
 
-            {/* Botão Premium */}
+            {/* Botão - Sóbrio e Executivo */}
             <Button
               onClick={handleRegistrar}
-              className="w-full h-14 text-base font-bold rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white transition-all duration-300 shadow-lg shadow-blue-200/50 hover:shadow-xl hover:shadow-blue-300/50 hover:-translate-y-0.5"
+              className="w-full h-12 text-sm font-medium rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-all duration-200 shadow-md hover:shadow-lg"
               size="lg"
             >
-              Registrar Avaliação
+              Enviar Avaliação
             </Button>
           </div>
 
           {/* Footer discreto */}
-          <p className="text-center text-xs text-slate-400 mt-6">
+          <p className="text-center text-xs text-slate-400 mt-8">
             Powered by SIA
           </p>
         </div>
@@ -291,110 +290,117 @@ export default function Avaliacao() {
     );
   }
 
-  // Etapa 2: Desfecho Condicional
+  // Etapa 2: Desfecho Condicional - Elegante
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 py-10 px-4">
+    <div className="min-h-screen bg-slate-50 py-12 px-4">
       <div className="max-w-md mx-auto animate-fade-in">
-        {/* Demo badge */}
+        {/* Demo badge - Discreto */}
         {isDemo && (
-          <div className="text-center mb-6">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-semibold shadow-lg shadow-blue-200">
-              🎭 Modo Demonstração
+          <div className="text-center mb-8">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-900 text-white text-xs font-medium">
+              Demonstração
             </span>
           </div>
         )}
 
         {isPositive ? (
-          // Cenário A: Nota 4 ou 5 - Sucesso
-          <div className="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/60 p-8 sm:p-10 border border-slate-100">
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200">
-                <span className="text-4xl">🎉</span>
+          // Cenário A: Nota 4 ou 5 - Sucesso Elegante
+          <div className="bg-white rounded-xl shadow-xl shadow-slate-200/40 p-8 sm:p-12 border border-slate-100/80">
+            {/* Ícone elegante com animação de check */}
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg animate-fade-in">
+                <CheckCircle2 className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-slate-800">
-                UAU! Ficamos muito felizes!
+              <h1 className="text-xl sm:text-2xl font-semibold text-slate-800 tracking-tight">
+                Agradecemos o seu reconhecimento
               </h1>
+              <p className="text-slate-500 text-sm mt-2">
+                Sua opinião é muito importante para nós.
+              </p>
             </div>
 
             {/* Comentário do cliente */}
             {comentario.trim() && (
-              <div className="bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-100 rounded-2xl p-5 mb-6">
-                <p className="text-xs font-semibold text-emerald-600 mb-2 uppercase tracking-wide">Seu comentário</p>
-                <p className="text-slate-700">{comentario}</p>
+              <div className="bg-slate-50 border border-slate-100 rounded-lg p-5 mb-8">
+                <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Seu comentário</p>
+                <p className="text-slate-700 leading-relaxed">{comentario}</p>
               </div>
             )}
 
-            {/* Instruções */}
-            <p className="text-sm text-slate-500 text-center mb-5 leading-relaxed">
-              Dica: Cite o serviço e, se puder, tire uma foto! Ao clicar abaixo, seu texto será copiado. Basta colar e publicar no Google.
+            {/* Instruções discretas */}
+            <p className="text-sm text-slate-500 text-center mb-6 leading-relaxed max-w-sm mx-auto">
+              Ao clicar no botão, seu texto será copiado automaticamente. Basta colar na avaliação do Google.
             </p>
 
-            {/* Box de Inspiração */}
+            {/* Box de Inspiração - Discreto */}
             {empresa.modelo_sugestao && (
-              <div className="border-2 border-dashed border-blue-200 rounded-2xl p-5 mb-6 bg-blue-50/50">
-                <p className="text-xs font-semibold text-blue-600 mb-2 uppercase tracking-wide">💡 Inspiração</p>
+              <div className="border border-slate-200 rounded-lg p-5 mb-8 bg-slate-50/50">
+                <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Sugestão de texto</p>
                 <p className="text-sm text-slate-600 italic leading-relaxed">
                   "{empresa.modelo_sugestao}"
                 </p>
               </div>
             )}
 
-            {/* Botão principal */}
+            {/* Botão principal - Executivo */}
             <Button
               onClick={handleCopyAndRedirect}
-              className="w-full h-14 text-sm font-bold rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white transition-all duration-300 shadow-lg shadow-blue-200/50 hover:shadow-xl hover:-translate-y-0.5 gap-2"
+              className="w-full h-12 text-sm font-medium rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-all duration-200 shadow-md hover:shadow-lg gap-2"
               size="lg"
             >
               {copied ? (
                 <>
-                  <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-                  <span>Copiado! Abrindo...</span>
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                  <span>Copiado — Abrindo Google</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-5 h-5 flex-shrink-0" />
+                  <Copy className="w-4 h-4 flex-shrink-0" />
                   <span>Copiar e Avaliar no Google</span>
-                  <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                  <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 opacity-60" />
                 </>
               )}
             </Button>
           </div>
         ) : (
-          // Cenário B: Nota 1, 2 ou 3 - Retenção
-          <div className="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/60 p-8 sm:p-10 border border-slate-100">
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-slate-400 to-slate-500 flex items-center justify-center shadow-lg shadow-slate-200">
-                <span className="text-4xl">😔</span>
+          // Cenário B: Nota 1, 2 ou 3 - Acolhimento Elegante
+          <div className="bg-white rounded-xl shadow-xl shadow-slate-200/40 p-8 sm:p-12 border border-slate-100/80">
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-slate-100 flex items-center justify-center">
+                <MessageCircle className="w-7 h-7 text-slate-500" strokeWidth={1.5} />
               </div>
-              <h1 className="text-2xl font-bold text-slate-800">
-                Poxa, sentimos muito...
+              <h1 className="text-xl sm:text-2xl font-semibold text-slate-800 tracking-tight">
+                Lamentamos que sua experiência não tenha sido ideal
               </h1>
+              <p className="text-slate-500 text-sm mt-2 max-w-xs mx-auto">
+                Gostaríamos de entender melhor o que aconteceu.
+              </p>
             </div>
 
             {/* Comentário do cliente */}
             {comentario.trim() && (
-              <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-2xl p-5 mb-6">
-                <p className="text-xs font-semibold text-amber-600 mb-2 uppercase tracking-wide">Seu comentário</p>
-                <p className="text-slate-700">{comentario}</p>
+              <div className="bg-slate-50 border border-slate-100 rounded-lg p-5 mb-8">
+                <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Seu comentário</p>
+                <p className="text-slate-700 leading-relaxed">{comentario}</p>
               </div>
             )}
 
             {/* Pergunta */}
-            <p className="text-sm text-slate-500 text-center mb-6 leading-relaxed">
-              Gostaria de encaminhar sua avaliação diretamente à gerência para uma solução?
+            <p className="text-sm text-slate-500 text-center mb-8 leading-relaxed">
+              Deseja encaminhar seu feedback diretamente à nossa equipe?
             </p>
 
-            {/* Botões de ação */}
+            {/* Botões de ação - Outline elegante */}
             <div className="space-y-3">
               {empresa.whatsapp_empresa && (
                 <Button
                   onClick={handleWhatsApp}
                   variant="outline"
-                  className="w-full h-14 text-base gap-3 rounded-2xl border-2 border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-300"
+                  className="w-full h-12 text-sm gap-3 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
                   size="lg"
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  Enviar por WhatsApp
+                  <MessageCircle className="w-4 h-4" strokeWidth={1.5} />
+                  Enviar via WhatsApp
                 </Button>
               )}
 
@@ -402,21 +408,23 @@ export default function Avaliacao() {
                 <Button
                   onClick={handleEmail}
                   variant="outline"
-                  className="w-full h-14 text-base gap-3 rounded-2xl border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-300"
+                  className="w-full h-12 text-sm gap-3 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
                   size="lg"
                 >
-                  <Mail className="w-5 h-5" />
-                  Enviar por E-mail
+                  <Mail className="w-4 h-4" strokeWidth={1.5} />
+                  Enviar via E-mail
                 </Button>
               )}
 
-              <Button
-                onClick={handleFinalizar}
-                className="w-full h-14 text-base gap-3 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold transition-all duration-300 shadow-lg shadow-blue-200/50 hover:shadow-xl hover:-translate-y-0.5"
-                size="lg"
-              >
-                Finalizar
-              </Button>
+              <div className="pt-2">
+                <Button
+                  onClick={handleFinalizar}
+                  className="w-full h-12 text-sm font-medium rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-all duration-200 shadow-md hover:shadow-lg"
+                  size="lg"
+                >
+                  Finalizar avaliação
+                </Button>
+              </div>
             </div>
           </div>
         )}
