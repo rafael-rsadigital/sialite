@@ -1,30 +1,43 @@
 import { useState } from "react";
-import { Star, Sparkles, ArrowRight, Shield, Zap, BarChart3, Play } from "lucide-react";
+import { Star, Sparkles, ArrowRight, Shield, Zap, BarChart3, Play, X, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function Index() {
   const navigate = useNavigate();
   const [nomeEmpresa, setNomeEmpresa] = useState("");
+  const [linkAvaliacao, setLinkAvaliacao] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
 
-  const handleDemo = async () => {
+  const handleOpenLinkDialog = () => {
     if (!nomeEmpresa.trim()) return;
-    
+    setShowLinkDialog(true);
+  };
+
+  const handleProsseguir = async (comLink: boolean) => {
     setIsSubmitting(true);
     
-    // Salvar lead de teste
+    // Salvar lead de teste com ou sem link
     try {
       await supabase.from("leads_teste").insert({
         nome_empresa: nomeEmpresa.trim(),
+        link_avaliacao: comLink && linkAvaliacao.trim() ? linkAvaliacao.trim() : null,
       });
     } catch {
       // Continua mesmo se falhar
     }
     
+    setShowLinkDialog(false);
     // Redirecionar para modo demo
     navigate(`/av/demo?nome=${encodeURIComponent(nomeEmpresa.trim())}`);
   };
@@ -84,11 +97,11 @@ export default function Index() {
                     value={nomeEmpresa}
                     onChange={(e) => setNomeEmpresa(e.target.value)}
                     className="h-14 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-cyan-400/50 focus:ring-cyan-400/20 transition-all duration-300"
-                    onKeyDown={(e) => e.key === "Enter" && handleDemo()}
+                    onKeyDown={(e) => e.key === "Enter" && handleOpenLinkDialog()}
                   />
                 </div>
                 <Button 
-                  onClick={handleDemo} 
+                  onClick={handleOpenLinkDialog} 
                   disabled={!nomeEmpresa.trim() || isSubmitting}
                   className="h-14 px-6 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-semibold border-0 shadow-lg shadow-cyan-500/25 transition-all duration-300 hover:shadow-cyan-500/40 hover:scale-[1.02]"
                 >
@@ -96,6 +109,49 @@ export default function Index() {
                   Testar
                 </Button>
               </div>
+
+              {/* Dialog para capturar link de avaliação */}
+              <Dialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
+                <DialogContent className="bg-slate-950 border-white/10 text-white max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-lg font-semibold text-white flex items-center gap-2">
+                      <Link2 className="w-5 h-5 text-cyan-400" />
+                      Link de Avaliação
+                    </DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="space-y-6 pt-2">
+                    <p className="text-sm text-slate-400 leading-relaxed">
+                      Insira o link de avaliação do Google da sua empresa para testar o fluxo completo.
+                    </p>
+                    
+                    <Input
+                      placeholder="https://g.page/r/..."
+                      value={linkAvaliacao}
+                      onChange={(e) => setLinkAvaliacao(e.target.value)}
+                      className="h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-cyan-400/50 focus:ring-cyan-400/20"
+                    />
+                    
+                    <div className="flex flex-col gap-3">
+                      <Button
+                        onClick={() => handleProsseguir(true)}
+                        disabled={!linkAvaliacao.trim() || isSubmitting}
+                        className="w-full h-12 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-medium border-0"
+                      >
+                        Continuar com o link
+                      </Button>
+                      
+                      <button
+                        onClick={() => handleProsseguir(false)}
+                        disabled={isSubmitting}
+                        className="w-full text-sm text-slate-500 hover:text-slate-300 transition-colors py-2"
+                      >
+                        Não possuo o link de avaliação no momento
+                      </button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
 

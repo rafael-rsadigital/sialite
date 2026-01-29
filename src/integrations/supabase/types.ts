@@ -89,16 +89,19 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          link_avaliacao: string | null
           nome_empresa: string
         }
         Insert: {
           created_at?: string
           id?: string
+          link_avaliacao?: string | null
           nome_empresa: string
         }
         Update: {
           created_at?: string
           id?: string
+          link_avaliacao?: string | null
           nome_empresa?: string
         }
         Relationships: []
