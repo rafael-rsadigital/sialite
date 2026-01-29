@@ -314,33 +314,36 @@ export default function Avaliacao() {
               <h1 className="text-xl sm:text-2xl font-semibold text-slate-800 tracking-tight">
                 Agradecemos o seu reconhecimento
               </h1>
-              <p className="text-slate-500 text-sm mt-2">
-                Sua opinião é muito importante para nós.
+            <p className="text-slate-500 text-sm mt-2">
+              Sua opinião é muito importante para nós.
+            </p>
+          </div>
+
+          {/* Comentário editável */}
+          <div className="mb-8">
+            <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Seu comentário</p>
+            <Textarea
+              placeholder="Adicione ou edite seu comentário..."
+              value={comentario}
+              onChange={(e) => setComentario(e.target.value)}
+              className="min-h-[100px] resize-none rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-300 focus:ring-slate-100 transition-all duration-200 placeholder:text-slate-400 text-slate-700 text-sm"
+            />
+          </div>
+
+          {/* Instruções discretas */}
+          <p className="text-sm text-slate-500 text-center mb-6 leading-relaxed max-w-sm mx-auto">
+            Ao clicar no botão, seu texto será copiado automaticamente. Basta colar na avaliação do Google.
+          </p>
+
+          {/* Box de Inspiração - Discreto */}
+          {empresa.modelo_sugestao && (
+            <div className="border border-slate-200 rounded-lg p-5 mb-8 bg-slate-50/50">
+              <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Sugestão de texto</p>
+              <p className="text-sm text-slate-600 italic leading-relaxed">
+                "{empresa.modelo_sugestao}"
               </p>
             </div>
-
-            {/* Comentário do cliente */}
-            {comentario.trim() && (
-              <div className="bg-slate-50 border border-slate-100 rounded-lg p-5 mb-8">
-                <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Seu comentário</p>
-                <p className="text-slate-700 leading-relaxed">{comentario}</p>
-              </div>
-            )}
-
-            {/* Instruções discretas */}
-            <p className="text-sm text-slate-500 text-center mb-6 leading-relaxed max-w-sm mx-auto">
-              Ao clicar no botão, seu texto será copiado automaticamente. Basta colar na avaliação do Google.
-            </p>
-
-            {/* Box de Inspiração - Discreto */}
-            {empresa.modelo_sugestao && (
-              <div className="border border-slate-200 rounded-lg p-5 mb-8 bg-slate-50/50">
-                <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Sugestão de texto</p>
-                <p className="text-sm text-slate-600 italic leading-relaxed">
-                  "{empresa.modelo_sugestao}"
-                </p>
-              </div>
-            )}
+          )}
 
             {/* Botão principal - Executivo */}
             <Button
@@ -362,13 +365,13 @@ export default function Avaliacao() {
               )}
             </Button>
 
-            {/* Editar avaliação */}
+            {/* Editar nota */}
             <button
               onClick={() => setEtapa("coleta")}
               className="w-full mt-4 text-sm text-slate-500 hover:text-slate-700 transition-colors duration-200 flex items-center justify-center gap-1.5"
             >
               <Pencil className="w-3.5 h-3.5" strokeWidth={1.5} />
-              Editar avaliação
+              Alterar nota
             </button>
           </div>
         ) : (
@@ -386,18 +389,21 @@ export default function Avaliacao() {
               </p>
             </div>
 
-            {/* Comentário do cliente */}
-            {comentario.trim() && (
-              <div className="bg-slate-50 border border-slate-100 rounded-lg p-5 mb-8">
-                <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Seu comentário</p>
-                <p className="text-slate-700 leading-relaxed">{comentario}</p>
-              </div>
-            )}
+          {/* Comentário editável */}
+          <div className="mb-8">
+            <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Seu comentário</p>
+            <Textarea
+              placeholder="Descreva o que podemos melhorar..."
+              value={comentario}
+              onChange={(e) => setComentario(e.target.value)}
+              className="min-h-[100px] resize-none rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-300 focus:ring-slate-100 transition-all duration-200 placeholder:text-slate-400 text-slate-700 text-sm"
+            />
+          </div>
 
-            {/* Pergunta */}
-            <p className="text-sm text-slate-500 text-center mb-8 leading-relaxed">
-              Deseja encaminhar seu feedback diretamente à nossa equipe?
-            </p>
+          {/* Pergunta */}
+          <p className="text-sm text-slate-500 text-center mb-8 leading-relaxed">
+            Deseja encaminhar seu feedback diretamente à nossa equipe?
+          </p>
 
             {/* Botões de ação - Outline elegante */}
             <div className="space-y-3">
@@ -435,13 +441,13 @@ export default function Avaliacao() {
                 </Button>
               </div>
 
-              {/* Editar avaliação */}
+              {/* Editar nota */}
               <button
                 onClick={() => setEtapa("coleta")}
                 className="w-full mt-2 text-sm text-slate-500 hover:text-slate-700 transition-colors duration-200 flex items-center justify-center gap-1.5"
               >
                 <Pencil className="w-3.5 h-3.5" strokeWidth={1.5} />
-                Editar avaliação
+                Alterar nota
               </button>
             </div>
           </div>
