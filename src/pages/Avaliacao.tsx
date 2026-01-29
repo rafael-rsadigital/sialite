@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { Star, Copy, ExternalLink, MessageCircle, Mail, CheckCircle2 } from "lucide-react";
+import { Star, Copy, ExternalLink, MessageCircle, Mail, CheckCircle2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { StarRating } from "@/components/StarRating";
@@ -361,6 +361,15 @@ export default function Avaliacao() {
                 </>
               )}
             </Button>
+
+            {/* Editar avaliação */}
+            <button
+              onClick={() => setEtapa("coleta")}
+              className="w-full mt-4 text-sm text-slate-500 hover:text-slate-700 transition-colors duration-200 flex items-center justify-center gap-1.5"
+            >
+              <Pencil className="w-3.5 h-3.5" strokeWidth={1.5} />
+              Editar avaliação
+            </button>
           </div>
         ) : (
           // Cenário B: Nota 1, 2 ou 3 - Acolhimento Elegante
@@ -425,6 +434,15 @@ export default function Avaliacao() {
                   Finalizar avaliação
                 </Button>
               </div>
+
+              {/* Editar avaliação */}
+              <button
+                onClick={() => setEtapa("coleta")}
+                className="w-full mt-2 text-sm text-slate-500 hover:text-slate-700 transition-colors duration-200 flex items-center justify-center gap-1.5"
+              >
+                <Pencil className="w-3.5 h-3.5" strokeWidth={1.5} />
+                Editar avaliação
+              </button>
             </div>
           </div>
         )}
