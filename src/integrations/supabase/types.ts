@@ -17,35 +17,47 @@ export type Database = {
       empresas: {
         Row: {
           created_at: string
+          data_vencimento: string | null
           email_empresa: string | null
           hash_secreto: string
           id: string
+          link_asaas: string | null
           link_google: string | null
           modelo_sugestao: string | null
           nome_exibicao: string
           slug: string
+          status_assinatura: boolean
+          valor_assinatura: number | null
           whatsapp_empresa: string | null
         }
         Insert: {
           created_at?: string
+          data_vencimento?: string | null
           email_empresa?: string | null
           hash_secreto: string
           id?: string
+          link_asaas?: string | null
           link_google?: string | null
           modelo_sugestao?: string | null
           nome_exibicao: string
           slug: string
+          status_assinatura?: boolean
+          valor_assinatura?: number | null
           whatsapp_empresa?: string | null
         }
         Update: {
           created_at?: string
+          data_vencimento?: string | null
           email_empresa?: string | null
           hash_secreto?: string
           id?: string
+          link_asaas?: string | null
           link_google?: string | null
           modelo_sugestao?: string | null
           nome_exibicao?: string
           slug?: string
+          status_assinatura?: boolean
+          valor_assinatura?: number | null
           whatsapp_empresa?: string | null
         }
         Relationships: []
