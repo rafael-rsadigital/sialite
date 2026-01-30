@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import Avaliacao from "./pages/Avaliacao";
 import Dashboard from "./pages/Dashboard";
 import AdminCadastro from "./pages/AdminCadastro";
+import AdminRSA from "./pages/AdminRSA";
+import Acesso from "./pages/Acesso";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +24,8 @@ const App = () => (
           <Route path="/av/:slug" element={<Avaliacao />} />
           <Route path="/dashboard/:hash" element={<Dashboard />} />
           <Route path="/admin-cadastro" element={<AdminCadastro />} />
+          <Route path="/admin-rsa" element={<AdminRSA />} />
+          <Route path="/acesso" element={<Acesso />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

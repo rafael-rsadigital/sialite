@@ -4,6 +4,7 @@ import { Star, Copy, ExternalLink, MessageCircle, Mail, CheckCircle2, Pencil } f
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { StarRating } from "@/components/StarRating";
+import { ServicoSuspenso } from "@/components/ServicoSuspenso";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -17,6 +18,7 @@ const DEMO_DATA = {
   whatsapp_empresa: "5511999999999",
   email_empresa: "contato@suaempresa.com",
   modelo_sugestao: "Adorei o atendimento! A equipe foi muito atenciosa e o serviço superou minhas expectativas. Recomendo a todos!",
+  status_assinatura: true,
 };
 
 export default function Avaliacao() {
@@ -32,6 +34,7 @@ export default function Avaliacao() {
     whatsapp_empresa: string | null;
     email_empresa: string | null;
     modelo_sugestao: string | null;
+    status_assinatura: boolean;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [nota, setNota] = useState(0);
@@ -56,7 +59,7 @@ export default function Avaliacao() {
       
       const { data, error } = await supabase
         .from("empresas")
-        .select("id, nome_exibicao, link_google, whatsapp_empresa, email_empresa, modelo_sugestao")
+        .select("id, nome_exibicao, link_google, whatsapp_empresa, email_empresa, modelo_sugestao, status_assinatura")
         .eq("slug", slug)
         .single();
 
@@ -204,6 +207,11 @@ export default function Avaliacao() {
         </div>
       </div>
     );
+  }
+
+  // Bloqueio por assinatura inativa
+  if (!empresa.status_assinatura && !isDemo) {
+    return <ServicoSuspenso />;
   }
 
   if (submitted) {
