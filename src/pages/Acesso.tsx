@@ -23,19 +23,34 @@ export default function Acesso() {
     setLoading(true);
     setErro("");
 
-    const { data, error } = await supabase
+    // Primeiro, verifica se é um gestor
+    const { data: gestorData } = await supabase
+      .from("gestores")
+      .select("id, hash_acesso")
+      .eq("hash_acesso", chave.trim())
+      .single();
+
+    if (gestorData) {
+      // É um gestor - redireciona para o dashboard com filtro
+      navigate(`/dashboard-gestor/${gestorData.id}`);
+      return;
+    }
+
+    // Se não for gestor, verifica se é uma empresa
+    const { data: empresaData, error } = await supabase
       .from("empresas")
       .select("hash_secreto")
       .eq("hash_secreto", chave.trim())
       .single();
 
-    if (error || !data) {
+    if (error || !empresaData) {
       setErro("Chave inválida ou não encontrada");
       setLoading(false);
       return;
     }
 
-    navigate(`/dashboard/${data.hash_secreto}`);
+    // É uma empresa - redireciona para o mural de feedbacks
+    navigate(`/dashboard/${empresaData.hash_secreto}`);
   };
 
   return (
@@ -71,10 +86,10 @@ export default function Acesso() {
           </div>
 
           <h1 className="text-2xl font-bold text-white mb-2">
-            Acesse seu Mural
+            Acesse seu Painel
           </h1>
           <p className="text-slate-400 mb-8">
-            Digite sua chave de acesso para visualizar seus feedbacks
+            Digite sua chave de acesso para visualizar seus feedbacks ou gerenciar suas empresas
           </p>
 
           <form onSubmit={handleAcessar} className="space-y-4">
@@ -107,7 +122,7 @@ export default function Acesso() {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  Acessar Mural
+                  Acessar Painel
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </>
               )}
