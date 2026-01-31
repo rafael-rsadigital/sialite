@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           data_vencimento: string | null
           email_empresa: string | null
+          gestor_id: string | null
           hash_secreto: string
           id: string
           link_asaas: string | null
@@ -34,6 +35,7 @@ export type Database = {
           created_at?: string
           data_vencimento?: string | null
           email_empresa?: string | null
+          gestor_id?: string | null
           hash_secreto: string
           id?: string
           link_asaas?: string | null
@@ -49,6 +51,7 @@ export type Database = {
           created_at?: string
           data_vencimento?: string | null
           email_empresa?: string | null
+          gestor_id?: string | null
           hash_secreto?: string
           id?: string
           link_asaas?: string | null
@@ -60,7 +63,15 @@ export type Database = {
           valor_assinatura?: number | null
           whatsapp_empresa?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "empresas_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "gestores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       feedbacks: {
         Row: {
@@ -96,6 +107,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      gestores: {
+        Row: {
+          created_at: string
+          email: string | null
+          hash_acesso: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          hash_acesso: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          hash_acesso?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
       }
       leads_teste: {
         Row: {
