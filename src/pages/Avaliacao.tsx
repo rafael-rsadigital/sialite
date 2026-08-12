@@ -346,7 +346,7 @@ export default function Avaliacao() {
           {/* Box de Inspiração - Discreto */}
           {empresa.modelo_sugestao && (
             <div className="border border-slate-200 rounded-lg p-5 mb-8 bg-slate-50/50">
-              <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Sugestão de texto</p>
+              <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Exemplo de avaliação com descrição de serviço</p>
               <p className="text-sm text-slate-600 italic leading-relaxed">
                 "{empresa.modelo_sugestao}"
               </p>
