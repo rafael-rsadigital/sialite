@@ -324,9 +324,9 @@ a[href*="lovable.dev"], iframe[src*="lovable.dev"], div[style*="Edit with Lovabl
   .positive-cta {
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(133, 204, 255, 0.54);
+    border: 1px solid rgba(126, 183, 220, 0.58);
     border-radius: 10px;
-    background: linear-gradient(180deg, #2f8dcc 0%, #1b6098 100%);
+    background: linear-gradient(180deg, #1d537b 0%, #0d304e 100%);
     color: #f7fbff;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 22px rgba(4, 19, 36, 0.24);
     font-family: 'IBM Plex Sans', Arial, sans-serif;
@@ -348,8 +348,8 @@ a[href*="lovable.dev"], iframe[src*="lovable.dev"], div[style*="Edit with Lovabl
   .legacy-button:hover,
   .positive-cta:hover {
     transform: translateY(-1px);
-    border-color: rgba(179, 224, 255, 0.84);
-    background: linear-gradient(180deg, #3a9bd8 0%, #1e689f 100%);
+    border-color: rgba(155, 206, 237, 0.8);
+    background: linear-gradient(180deg, #28638f 0%, #123d61 100%);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 14px 30px rgba(3, 19, 37, 0.32);
   }
 
@@ -490,9 +490,9 @@ a[href*="lovable.dev"], iframe[src*="lovable.dev"], div[style*="Edit with Lovabl
 .positive-cta {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(133, 204, 255, 0.54);
+  border: 1px solid rgba(126, 183, 220, 0.58);
   border-radius: 10px;
-  background: linear-gradient(180deg, #2f8dcc 0%, #1b6098 100%);
+  background: linear-gradient(180deg, #1d537b 0%, #0d304e 100%);
   color: #f7fbff;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 22px rgba(4, 19, 36, 0.24);
   font-family: 'IBM Plex Sans', Arial, sans-serif;
@@ -512,8 +512,8 @@ a[href*="lovable.dev"], iframe[src*="lovable.dev"], div[style*="Edit with Lovabl
 
 .positive-cta:hover {
   transform: translateY(-1px);
-  border-color: rgba(179, 224, 255, 0.84);
-  background: linear-gradient(180deg, #3a9bd8 0%, #1e689f 100%);
+  border-color: rgba(155, 206, 237, 0.8);
+  background: linear-gradient(180deg, #28638f 0%, #123d61 100%);
   color: #ffffff;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 14px 30px rgba(3, 19, 37, 0.32);
 }
