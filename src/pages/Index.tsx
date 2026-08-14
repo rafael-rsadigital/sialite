@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import siaLogo from "@/assets/sia-lite-logo.png";
 
 const features = [
   {
@@ -79,24 +80,24 @@ export default function Index() {
       <header className="masthead relative z-10">
         <nav className="mx-auto flex max-w-6xl items-center justify-between gap-5 px-5 py-4 lg:px-8">
           <div className="flex items-center gap-3">
-            <div className="brand-mark" aria-hidden="true">
-              <Zap className="h-4 w-4 fill-current" />
+            <div className="brand-mark overflow-hidden" aria-hidden="true">
+              <img src={siaLogo} alt="" className="sia-logo-mark" />
             </div>
             <div>
-              <span className="block text-sm font-bold leading-none tracking-tight text-[#122235]">SIA</span>
-              <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.14em] text-[#67717a] sm:text-[10px]">
+              <span className="block text-sm font-bold leading-none tracking-tight text-[#f5f8fc]">SIA</span>
+              <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.14em] text-[#b7d4e7] sm:text-[10px]">
                 Sistema Inteligente de Avaliações
               </span>
             </div>
           </div>
-          <div className="hidden items-center gap-7 text-xs font-semibold text-[#4e5b67] md:flex">
-            <a href="#beneficios" className="transition-colors hover:text-[#173b61]">Benefícios</a>
-            <a href="#processo" className="transition-colors hover:text-[#173b61]">Como funciona</a>
-            <button type="button" onClick={() => navigate("/acesso")} className="transition-colors hover:text-[#173b61]">
+          <div className="hidden items-center gap-7 text-xs font-semibold text-[#d2e7f5] md:flex">
+            <a href="#beneficios" className="transition-colors hover:text-[#68d9ef]">Benefícios</a>
+            <a href="#processo" className="transition-colors hover:text-[#68d9ef]">Como funciona</a>
+            <button type="button" onClick={() => navigate("/acesso")} className="transition-colors hover:text-[#68d9ef]">
               Área do cliente
             </button>
           </div>
-          <span className="border-l border-[#bdb3a0] pl-4 text-[10px] font-bold uppercase tracking-[0.14em] text-[#8b5427]">
+          <span className="border-l border-[#4a7394] pl-4 text-[10px] font-bold uppercase tracking-[0.14em] text-[#6de0ee]">
             Reputação e feedback
           </span>
         </nav>

@@ -604,3 +604,171 @@ body {
     background-attachment: scroll, scroll !important;
   }
 }
+
+/* Refinamento final: fundo único da tela de agradecimento, superfícies sólidas e geometria suave */
+:root {
+  --sia-thank-you-background:
+    radial-gradient(ellipse 58% 76% at 7% 94%, rgba(8, 95, 159, 0.56), transparent 66%),
+    radial-gradient(ellipse 42% 68% at 96% 4%, rgba(49, 148, 207, 0.38), transparent 70%),
+    radial-gradient(circle at 72% 78%, rgba(190, 139, 55, 0.18), transparent 28rem),
+    linear-gradient(125deg, #03101f 0%, #061d33 44%, #082741 100%);
+}
+
+html,
+body,
+.ink-shell,
+.paper-screen,
+.site-shell,
+.positive-stage,
+.sia-page-background-dark,
+.sia-page-background-light {
+  background: var(--sia-thank-you-background) !important;
+  background-attachment: fixed !important;
+}
+
+/* Remove o aspecto glass: superfícies ficam opacas e definidas. */
+.backdrop-blur,
+.backdrop-blur-sm,
+.backdrop-blur-md,
+.backdrop-blur-lg,
+.backdrop-blur-xl,
+.backdrop-blur-2xl,
+.backdrop-blur-3xl {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.positive-panel,
+.portal-panel,
+.legacy-card-dark {
+  background: #0c2741 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.positive-panel::before { display: none; }
+
+/* Bordas discretamente arredondadas para ações e superfícies. */
+button,
+[role="button"],
+.legacy-button,
+.legacy-button-secondary,
+.positive-cta,
+.legacy-card,
+.review-card,
+.portal-panel,
+.positive-panel,
+.professional-card,
+.rounded-sm,
+.rounded-md,
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl {
+  border-radius: 8px !important;
+}
+
+/* A primeira área da home recebe o fundo principal; a seção seguinte usa azul mais claro. */
+.site-shell > section:first-of-type {
+  color: #edf7ff;
+  background: var(--sia-thank-you-background) !important;
+}
+
+.site-shell > section:first-of-type .eyebrow,
+.site-shell > section:first-of-type h1,
+.site-shell > section:first-of-type p,
+.site-shell > section:first-of-type span {
+  color: inherit;
+}
+
+.site-shell > section:first-of-type .legacy-card,
+.site-shell > section:first-of-type .legacy-card > div {
+  background: #f4f8fc !important;
+  color: #122235;
+}
+
+.site-shell > section:first-of-type .legacy-card p,
+.site-shell > section:first-of-type .legacy-card span,
+.site-shell > section:first-of-type .legacy-card label {
+  color: revert;
+}
+
+.site-shell > section:nth-of-type(2) {
+  color: #eaf6ff;
+  background: linear-gradient(135deg, #0d365c 0%, #164a75 52%, #0e2f50 100%) !important;
+}
+
+.site-shell > section:nth-of-type(2) .eyebrow,
+.site-shell > section:nth-of-type(2) h2,
+.site-shell > section:nth-of-type(2) h3,
+.site-shell > section:nth-of-type(2) p,
+.site-shell > section:nth-of-type(2) span {
+  color: inherit;
+}
+
+.site-shell > section:nth-of-type(2) article {
+  background: #123d63 !important;
+  border-color: rgba(179, 218, 244, 0.24) !important;
+}
+
+.site-shell > section:nth-of-type(2) svg { color: #65d7eb !important; }
+
+/* Marca em modo screen: o escuro do arquivo desaparece visualmente sobre fundos azuis. */
+.sia-logo-mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: screen;
+  filter: brightness(.92) contrast(2.8) saturate(1.25);
+}
+
+.sia-logo-lockup {
+  width: 5rem;
+  height: 5rem;
+  object-fit: contain;
+  mix-blend-mode: screen;
+  filter: brightness(.92) contrast(2.8) saturate(1.25);
+}
+
+@media (max-width: 768px) {
+  html,
+  body,
+  .ink-shell,
+  .paper-screen,
+  .site-shell,
+  .positive-stage,
+  .sia-page-background-dark,
+  .sia-page-background-light {
+    background-attachment: scroll !important;
+  }
+}
+
+/* Cabeçalho e áreas de transição seguem o mesmo fundo da tela de agradecimento. */
+.masthead {
+  background: transparent !important;
+  border-color: rgba(132, 191, 229, 0.2) !important;
+  box-shadow: none !important;
+}
+
+.paper-screen > div > header > .eyebrow,
+.paper-screen > div > header > h1,
+.paper-screen > div > header > p {
+  color: #edf7ff !important;
+}
+
+.paper-screen > div > p.text-slate-400,
+.paper-screen > div > p.text-xs {
+  color: #b7d4e7 !important;
+}
+
+/* Painéis que antes eram translúcidos passam a usar azul sólido. */
+.ink-shell > div[class*="bg-[#101d2d]"],
+.ink-shell > section[class*="bg-[#142840]"] {
+  background: #0c2741 !important;
+}
+
+[class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}

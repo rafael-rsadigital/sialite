@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { KeyRound, ArrowRight, AlertCircle, Landmark, LockKeyhole } from "lucide-react";
+import { KeyRound, ArrowRight, AlertCircle, LockKeyhole } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import siaLogo from "@/assets/sia-lite-logo.png";
 
 export default function Acesso() {
   const [chave, setChave] = useState("");
@@ -52,7 +53,7 @@ export default function Acesso() {
       <div className="w-full max-w-5xl border border-[#607080] bg-[#101d2d]/80 p-1 shadow-[6px_6px_0_rgba(0,0,0,.22)]">
         <div className="grid border border-[#5a6877] md:grid-cols-[.9fr_1.1fr]">
           <section className="border-b border-[#5a6877] bg-[#142840] p-7 text-[#f5f0e5] md:border-b-0 md:border-r sm:p-10">
-            <div className="flex items-center gap-3"><div className="brand-mark"><Landmark className="h-4 w-4" /></div><div><p className="text-xs font-bold uppercase tracking-[0.15em] text-[#d6a66a]">Área do cliente</p><p className="mt-1 text-sm font-semibold">SIA / Acesso reservado</p></div></div>
+            <div className="flex items-center gap-3"><div className="brand-mark overflow-hidden"><img src={siaLogo} alt="SIA Lite" className="sia-logo-mark" /></div><div><p className="text-xs font-bold uppercase tracking-[0.15em] text-[#65d7eb]">Área do cliente</p><p className="mt-1 text-sm font-semibold">SIA / Acesso reservado</p></div></div>
             <div className="mt-16 max-w-sm"><p className="eyebrow text-[#d6a66a]">Painel de acompanhamento</p><h1 className="display-title mt-4 text-3xl leading-tight text-[#f5f0e5] sm:text-4xl">Informações organizadas. Acesso seguro.</h1><p className="mt-5 text-sm leading-6 text-[#c1c9cf]">Consulte os retornos dos seus clientes ou gerencie empresas a partir de uma chave individual de acesso.</p></div>
             <div className="mt-12 border-t border-[#5a6877] pt-5 text-xs leading-5 text-[#aeb8c0]"><span className="mr-2 inline-flex h-5 w-5 items-center justify-center border border-[#6c7b89] text-[#d6a66a]"><LockKeyhole className="h-3 w-3" /></span>As chaves são exclusivas e vinculadas ao seu painel.</div>
           </section>
