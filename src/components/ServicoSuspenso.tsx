@@ -6,7 +6,7 @@ export function ServicoSuspenso() {
   const whatsappLink = "https://wa.me/5512988052097?text=Ol%C3%A1%2C%20gostaria%20de%20reativar%20meu%20servi%C3%A7o%20SIA.";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center relative overflow-hidden p-4">
+    <div className="sia-page-background-dark min-h-screen flex items-center justify-center relative overflow-hidden p-4">
       {/* Background effects */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-amber-500/15 rounded-full blur-3xl animate-pulse" />

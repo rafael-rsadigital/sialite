@@ -522,3 +522,85 @@ a[href*="lovable.dev"], iframe[src*="lovable.dev"], div[style*="Edit with Lovabl
   transform: translateY(0);
   box-shadow: inset 0 1px 3px rgba(1, 14, 28, 0.35), 0 5px 14px rgba(3, 19, 37, 0.24);
 }
+
+/* Background oficial SIA: aplicado de forma consistente em todos os shells de página */
+:root {
+  --sia-official-background: url('./assets/sia-background-pesquisa-satisfacao.png');
+}
+
+html,
+body {
+  background-color: #031327;
+  background-image: var(--sia-official-background);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.ink-shell,
+.positive-stage,
+.sia-page-background-dark {
+  background-color: #061a32 !important;
+  background-image:
+    linear-gradient(115deg, rgba(1, 13, 31, 0.72), rgba(5, 31, 61, 0.62)),
+    var(--sia-official-background) !important;
+  background-position: center, center !important;
+  background-size: cover, cover !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-attachment: fixed, fixed !important;
+}
+
+.paper-screen,
+.sia-page-background-light {
+  background-color: #e9f1f8 !important;
+  background-image:
+    linear-gradient(115deg, rgba(239, 247, 252, 0.9), rgba(224, 239, 249, 0.84)),
+    var(--sia-official-background) !important;
+  background-position: center, center !important;
+  background-size: cover, cover !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-attachment: fixed, fixed !important;
+}
+
+.site-shell {
+  background-color: #0a2440 !important;
+  background-image:
+    linear-gradient(115deg, rgba(224, 239, 249, 0.74), rgba(235, 246, 253, 0.8)),
+    var(--sia-official-background) !important;
+  background-position: center, center !important;
+  background-size: cover, cover !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-attachment: fixed, fixed !important;
+}
+
+.site-shell > section:not(.ink-shell),
+.site-shell > footer {
+  background-color: rgba(244, 249, 253, 0.83) !important;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.sia-page-background-dark::before,
+.positive-stage::before {
+  z-index: 0;
+}
+
+.sia-page-background-dark > *,
+.positive-stage > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  html,
+  body,
+  .ink-shell,
+  .positive-stage,
+  .paper-screen,
+  .site-shell,
+  .sia-page-background-dark,
+  .sia-page-background-light {
+    background-attachment: scroll, scroll !important;
+  }
+}
