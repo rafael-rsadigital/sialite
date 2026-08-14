@@ -12,51 +12,34 @@ interface FeedbackCardProps {
 }
 
 export function FeedbackCard({ nota, comentario, tipo_envio, created_at }: FeedbackCardProps) {
-  const isPositive = nota >= 4;
-  
   return (
-    <Card className="bg-white/5 backdrop-blur-sm border-white/10 hover:border-white/20 transition-all duration-300 shadow-xl animate-fade-in">
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-1.5">
+    <Card className="border-white/10 bg-white/[0.035] shadow-none transition-colors hover:border-white/[0.18] hover:bg-white/[0.05]">
+      <CardContent className="p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-1" aria-label={`${nota} de 5 estrelas`}>
             {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
-                className={cn(
-                  "w-5 h-5 transition-colors",
-                  star <= nota
-                    ? "fill-amber-400 text-amber-400"
-                    : "fill-transparent text-slate-600"
-                )}
-              />
+              <Star key={star} className={cn("h-4 w-4", star <= nota ? "fill-amber-400 text-amber-400" : "text-slate-700")} />
             ))}
+            <span className="ml-2 text-xs font-medium text-slate-500">{nota}/5</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className={cn(
-              "text-xs px-3 py-1 rounded-full font-medium",
-              tipo_envio === "google" 
-                ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" 
-                : tipo_envio === "whatsapp"
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                : tipo_envio === "email"
-                ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                : "bg-white/10 text-slate-400 border border-white/10"
-            )}>
-              {tipo_envio === "google" ? "Google" 
-                : tipo_envio === "whatsapp" ? "WhatsApp" 
-                : tipo_envio === "email" ? "E-mail" 
-                : "Anônimo"}
-            </span>
-          </div>
+          <span className={cn(
+            "rounded-md border px-2.5 py-1 text-[11px] font-medium",
+            tipo_envio === "google" ? "border-cyan-400/15 bg-cyan-400/[0.06] text-cyan-300" :
+            tipo_envio === "whatsapp" ? "border-emerald-400/15 bg-emerald-400/[0.06] text-emerald-300" :
+            tipo_envio === "email" ? "border-blue-400/15 bg-blue-400/[0.06] text-blue-300" :
+            "border-white/10 bg-white/[0.04] text-slate-500"
+          )}>
+            {tipo_envio === "google" ? "Google" : tipo_envio === "whatsapp" ? "WhatsApp" : tipo_envio === "email" ? "E-mail" : "Anônimo"}
+          </span>
         </div>
-        
-        {comentario && (
-          <p className="mt-4 text-slate-300 text-sm leading-relaxed">
-            "{comentario}"
-          </p>
+
+        {comentario ? (
+          <p className="mt-5 text-sm leading-6 text-slate-300">“{comentario}”</p>
+        ) : (
+          <p className="mt-5 text-sm italic text-slate-600">Sem comentário.</p>
         )}
-        
-        <p className="mt-4 text-xs text-slate-500">
+
+        <p className="mt-5 border-t border-white/[0.06] pt-4 text-xs text-slate-600">
           {format(new Date(created_at), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
         </p>
       </CardContent>
