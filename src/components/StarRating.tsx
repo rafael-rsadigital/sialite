@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StarRatingProps {
@@ -10,16 +9,16 @@ interface StarRatingProps {
 }
 
 const sizeClasses = {
-  sm: "w-6 h-6",
-  md: "w-10 h-10",
-  lg: "w-12 h-12",
+  sm: "h-6 w-6",
+  md: "h-10 w-10",
+  lg: "h-12 w-12",
 };
 
 export function StarRating({ value, onChange, readonly = false, size = "lg" }: StarRatingProps) {
   const [hovered, setHovered] = useState(0);
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="rating-control flex items-center gap-2" role="radiogroup" aria-label="Escolha uma nota de 1 a 5">
       {[1, 2, 3, 4, 5].map((star) => {
         const isFilled = star <= (hovered || value);
         return (
@@ -27,6 +26,9 @@ export function StarRating({ value, onChange, readonly = false, size = "lg" }: S
             key={star}
             type="button"
             disabled={readonly}
+            aria-label={`${star} ${star === 1 ? "estrela" : "estrelas"}`}
+            aria-checked={value === star}
+            role="radio"
             onClick={() => !readonly && onChange(star)}
             onMouseEnter={() => !readonly && setHovered(star)}
             onMouseLeave={() => !readonly && setHovered(0)}
@@ -38,20 +40,12 @@ export function StarRating({ value, onChange, readonly = false, size = "lg" }: S
               }
             }}
             className={cn(
-              "transition-all duration-150 touch-manipulation",
-              !readonly && "cursor-pointer hover:scale-110 active:scale-95",
+              "rating-star-button touch-manipulation",
+              !readonly && "cursor-pointer",
               readonly && "cursor-default"
             )}
           >
-            <Star
-              className={cn(
-                sizeClasses[size],
-                "transition-colors duration-150",
-                isFilled
-                  ? "fill-star-filled text-star-filled"
-                  : "fill-transparent text-star-empty"
-              )}
-            />
+            <span aria-hidden="true" className={cn(sizeClasses[size], "rating-star", isFilled && "is-active")} />
           </button>
         );
       })}
