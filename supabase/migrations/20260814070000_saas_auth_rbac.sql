@@ -240,6 +240,21 @@ drop policy if exists "Gestores podem ser deletados" on public.gestores;
 drop policy if exists "Qualquer um pode criar lead de teste" on public.leads_teste;
 drop policy if exists "Leads podem ser lidos" on public.leads_teste;
 
+-- Também remove as políticas desta própria migração para permitir nova execução
+-- segura caso a configuração tenha sido iniciada anteriormente.
+drop policy if exists "Perfis próprios ou administração" on public.perfis;
+drop policy if exists "Administração gerencia perfis" on public.perfis;
+drop policy if exists "Admin vê todas as empresas; contas veem o próprio escopo" on public.empresas;
+drop policy if exists "Administração e gestores cadastram empresas próprias" on public.empresas;
+drop policy if exists "Administração e gestores atualizam o próprio escopo" on public.empresas;
+drop policy if exists "Somente administração exclui empresas" on public.empresas;
+drop policy if exists "Administração ou gestor responsável leem gestores" on public.gestores;
+drop policy if exists "Somente administração gerencia gestores" on public.gestores;
+drop policy if exists "Contas autorizadas leem os feedbacks do próprio escopo" on public.feedbacks;
+drop policy if exists "Somente administração exclui avaliações" on public.feedbacks;
+drop policy if exists "Leads podem ser registrados publicamente" on public.leads_teste;
+drop policy if exists "Somente administração vê leads" on public.leads_teste;
+
 create policy "Perfis próprios ou administração"
   on public.perfis for select to authenticated
   using (id = auth.uid() or public.eh_administrador());
