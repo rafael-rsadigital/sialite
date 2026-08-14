@@ -34,47 +34,48 @@ export default function Dashboard() {
   const avaliacoesPositivas = feedbacks.filter((f) => f.nota >= 4).length;
   const percentualPositivo = totalAvaliacoes > 0 ? Math.round((avaliacoesPositivas / totalAvaliacoes) * 100) : 0;
 
-  if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-slate-700 border-t-cyan-400 animate-spin" /></div>;
+  if (loading) return <div className="ink-shell flex items-center justify-center"><div className="h-8 w-8 animate-spin border-2 border-[#687887] border-t-[#d6a66a]" /></div>;
 
   if (error || !empresa) return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-5">
-      <Card className="w-full max-w-sm border-white/10 bg-white/[0.04] shadow-2xl"><CardContent className="p-8 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-white/[0.06] text-slate-400"><Lock className="h-5 w-5" /></div>
-        <h1 className="mt-5 text-lg font-semibold text-white">Acesso indisponível</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">O link deste dashboard é inválido ou não está mais disponível.</p>
+    <div className="ink-shell flex items-center justify-center p-5">
+      <Card className="portal-panel w-full max-w-sm"><CardContent className="p-8 text-center">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center border border-[#647384] bg-white/5 text-[#d6a66a]"><Lock className="h-5 w-5" /></div>
+        <h1 className="mt-5 text-lg font-semibold text-[#f5f0e5]">Acesso indisponível</h1>
+        <p className="mt-2 text-sm leading-6 text-[#b7c0c5]">O link deste dashboard é inválido ou não está mais disponível.</p>
       </CardContent></Card>
     </div>
   );
 
+  const metrics = [
+    { label: "Nota média", value: mediaNotas, suffix: "/ 5", icon: Star, iconClass: "fill-[#d6a66a] text-[#d6a66a]" },
+    { label: "Avaliações", value: totalAvaliacoes, suffix: "recebidas", icon: MessageSquare, iconClass: "text-[#aeb8c0]" },
+    { label: "Positivas", value: `${percentualPositivo}%`, suffix: "do total", icon: TrendingUp, iconClass: "text-[#83b197]" },
+  ];
+
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-white/[0.07] bg-slate-950/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-950"><BarChart3 className="h-4 w-4" /></div>
-            <div><p className="text-sm font-semibold tracking-tight">SIA</p><p className="text-[11px] text-slate-600">Dashboard privado</p></div>
-          </div>
-          <div className="hidden text-right sm:block"><p className="text-sm font-medium text-slate-300">{empresa.nome_exibicao}</p><p className="text-xs text-slate-600">Visão geral das avaliações</p></div>
+    <main className="ink-shell">
+      <header className="border-b border-[#526170] bg-[#101d2d]/90">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-5 px-5 py-4 lg:px-8">
+          <div className="flex items-center gap-3"><div className="brand-mark"><BarChart3 className="h-4 w-4" /></div><div><p className="text-sm font-semibold tracking-tight text-[#f5f0e5]">SIA</p><p className="text-[10px] font-bold uppercase tracking-[.12em] text-[#aeb8c0]">Dashboard privado</p></div></div>
+          <div className="hidden border-l border-[#526170] pl-4 text-right sm:block"><p className="text-sm font-semibold text-[#f5f0e5]">{empresa.nome_exibicao}</p><p className="mt-0.5 text-xs text-[#aeb8c0]">Visão geral das avaliações</p></div>
         </div>
       </header>
 
       <div className="mx-auto max-w-5xl px-5 py-10 lg:px-8 lg:py-12">
-        <div className="mb-9"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-400">Visão geral</p><h1 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">Suas avaliações</h1><p className="mt-2 text-sm text-slate-500">Acompanhe o que seus clientes estão dizendo.</p></div>
+        <div className="flex items-end justify-between gap-5 border-b border-[#526170] pb-7"><div><p className="eyebrow text-[#d6a66a]">Relatório de reputação</p><h1 className="display-title mt-3 text-3xl text-[#f5f0e5] sm:text-4xl">Suas avaliações</h1><p className="mt-3 text-sm text-[#b7c0c5]">Acompanhe o que seus clientes estão dizendo.</p></div><span className="hidden text-xs font-bold tracking-[.12em] text-[#aeb8c0] sm:block">ATUALIZAÇÃO EM TEMPO REAL</span></div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Card className="border-white/10 bg-white/[0.035] shadow-none"><CardContent className="p-5"><div className="flex items-center justify-between"><span className="text-xs font-medium uppercase tracking-wider text-slate-500">Nota média</span><Star className="h-4 w-4 fill-amber-400 text-amber-400" /></div><div className="mt-4 flex items-baseline gap-2"><span className="text-3xl font-semibold tracking-tight text-white">{mediaNotas}</span><span className="text-sm text-slate-600">/ 5</span></div></CardContent></Card>
-          <Card className="border-white/10 bg-white/[0.035] shadow-none"><CardContent className="p-5"><div className="flex items-center justify-between"><span className="text-xs font-medium uppercase tracking-wider text-slate-500">Avaliações</span><MessageSquare className="h-4 w-4 text-slate-500" /></div><div className="mt-4 flex items-baseline gap-2"><span className="text-3xl font-semibold tracking-tight text-white">{totalAvaliacoes}</span><span className="text-sm text-slate-600">recebidas</span></div></CardContent></Card>
-          <Card className="border-white/10 bg-white/[0.035] shadow-none"><CardContent className="p-5"><div className="flex items-center justify-between"><span className="text-xs font-medium uppercase tracking-wider text-slate-500">Positivas</span><TrendingUp className="h-4 w-4 text-emerald-400" /></div><div className="mt-4 flex items-baseline gap-2"><span className="text-3xl font-semibold tracking-tight text-white">{percentualPositivo}%</span><span className="text-sm text-slate-600">do total</span></div></CardContent></Card>
+        <div className="mt-7 grid overflow-hidden border border-[#526170] bg-[#526170] sm:grid-cols-3">
+          {metrics.map((metric) => <section key={metric.label} className="legacy-card-dark p-5 shadow-none"><div className="flex items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#aeb8c0]">{metric.label}</span><metric.icon className={`h-4 w-4 ${metric.iconClass}`} /></div><div className="mt-5 flex items-baseline gap-2"><span className="text-3xl font-semibold tracking-tight text-[#f5f0e5]">{metric.value}</span><span className="text-xs text-[#aeb8c0]">{metric.suffix}</span></div></section>)}
         </div>
 
         <section className="mt-10">
-          <div className="mb-5 flex items-center justify-between"><div><h2 className="text-base font-semibold text-white">Últimas avaliações</h2><p className="mt-1 text-xs text-slate-600">Mais recentes primeiro</p></div><ArrowUpRight className="h-4 w-4 text-slate-700" /></div>
+          <div className="mb-5 flex items-end justify-between border-b border-[#526170] pb-4"><div><p className="eyebrow text-[#d6a66a]">Registros recentes</p><h2 className="mt-2 text-xl font-bold text-[#f5f0e5]">Últimas avaliações</h2><p className="mt-1 text-xs text-[#aeb8c0]">Mais recentes primeiro</p></div><ArrowUpRight className="h-5 w-5 text-[#d6a66a]" /></div>
           {feedbacks.length === 0 ? (
-            <Card className="border-white/10 bg-white/[0.025] shadow-none"><CardContent className="p-10 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-white/[0.04] text-slate-600"><MessageSquare className="h-5 w-5" /></div><p className="mt-4 text-sm text-slate-500">Nenhuma avaliação recebida ainda.</p><p className="mt-1 text-xs text-slate-700">Quando houver uma nova avaliação, ela aparecerá aqui.</p></CardContent></Card>
+            <Card className="portal-panel shadow-none"><CardContent className="p-10 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center border border-[#526170] bg-white/5 text-[#d6a66a]"><MessageSquare className="h-5 w-5" /></div><p className="mt-4 text-sm text-[#d4dadd]">Nenhuma avaliação recebida ainda.</p><p className="mt-1 text-xs text-[#aeb8c0]">Quando houver uma nova avaliação, ela aparecerá aqui.</p></CardContent></Card>
           ) : <div className="space-y-3">{feedbacks.map((feedback) => <FeedbackCard key={feedback.id} nota={feedback.nota} comentario={feedback.comentario} tipo_envio={feedback.tipo_envio} created_at={feedback.created_at} />)}</div>}
         </section>
 
-        <footer className="mt-12 border-t border-white/[0.07] pt-6 text-center text-xs text-slate-700">SIA — Sistema Inteligente de Avaliações</footer>
+        <footer className="mt-12 border-t border-[#526170] pt-6 text-center text-xs text-[#aeb8c0]">SIA — Sistema Inteligente de Avaliações</footer>
       </div>
     </main>
   );

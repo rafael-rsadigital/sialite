@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { Star, Copy, ExternalLink, MessageCircle, Mail, CheckCircle2, Pencil } from "lucide-react";
+import { ArrowLeft, Camera, CheckCircle2, Copy, ExternalLink, Mail, MessageCircle, PenLine, Pencil, Star, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StarRating } from "@/components/StarRating";
 import { ServicoSuspenso } from "@/components/ServicoSuspenso";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type Etapa = "coleta" | "desfecho";
+type Etapa = "coleta" | "desfecho" | "retorno";
 
-// Dados fictícios para modo demo
 const DEMO_DATA = {
   id: "demo",
   nome_exibicao: "Sua Empresa",
@@ -26,7 +26,6 @@ export default function Avaliacao() {
   const [searchParams] = useSearchParams();
   const isDemo = slug === "demo";
   const nomeFromQuery = searchParams.get("nome");
-
   const [empresa, setEmpresa] = useState<{
     id: string;
     nome_exibicao: string;
@@ -42,21 +41,18 @@ export default function Avaliacao() {
   const [etapa, setEtapa] = useState<Etapa>("coleta");
   const [submitted, setSubmitted] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [nomeRetorno, setNomeRetorno] = useState("");
+  const [contatoRetorno, setContatoRetorno] = useState("");
 
   useEffect(() => {
     async function fetchEmpresa() {
-      // Modo Demo
       if (isDemo) {
-        setEmpresa({
-          ...DEMO_DATA,
-          nome_exibicao: nomeFromQuery || DEMO_DATA.nome_exibicao,
-        });
+        setEmpresa({ ...DEMO_DATA, nome_exibicao: nomeFromQuery || DEMO_DATA.nome_exibicao });
         setLoading(false);
         return;
       }
 
       if (!slug) return;
-      
       const { data, error } = await supabase
         .from("empresas")
         .select("id, nome_exibicao, link_google, whatsapp_empresa, email_empresa, modelo_sugestao, status_assinatura")
@@ -76,6 +72,26 @@ export default function Avaliacao() {
     fetchEmpresa();
   }, [slug, isDemo, nomeFromQuery]);
 
+  const salvarFeedback = async (tipoEnvio: string, texto: string) => {
+    if (!isDemo && empresa?.id) {
+      await supabase.from("feedbacks").insert({
+        empresa_id: empresa.id,
+        nota,
+        comentario: texto,
+        tipo_envio: tipoEnvio,
+      });
+    }
+  };
+
+  const montarFeedback = (incluirContato = false) => {
+    const partes = [comentario.trim()];
+    if (incluirContato && (nomeRetorno.trim() || contatoRetorno.trim())) {
+      const identificacao = [nomeRetorno.trim(), contatoRetorno.trim()].filter(Boolean).join(" · ");
+      partes.push(`Solicitação de retorno: ${identificacao}`);
+    }
+    return partes.filter(Boolean).join("\n\n") || "Feedback sem comentário";
+  };
+
   const handleRegistrar = () => {
     if (nota === 0) {
       toast.error("Por favor, selecione uma nota");
@@ -85,387 +101,136 @@ export default function Avaliacao() {
   };
 
   const handleCopyAndRedirect = async () => {
-    const textToCopy = comentario.trim() || "";
-    
+    const texto = montarFeedback();
     try {
-      await navigator.clipboard.writeText(textToCopy);
-      setCopied(true);
-      toast.success("Comentário copiado!");
-      
-      // Não salvar feedback no modo demo
-      if (!isDemo && empresa?.id) {
-        await supabase.from("feedbacks").insert({
-          empresa_id: empresa.id,
-          nota,
-          comentario: textToCopy,
-          tipo_envio: "google",
-        });
-      }
-
-      setTimeout(() => {
-        if (empresa?.link_google) {
-          window.open(empresa.link_google, "_blank");
-        }
-      }, 500);
+      await navigator.clipboard.writeText(texto);
     } catch {
-      // Fallback para mobile
       const textArea = document.createElement("textarea");
-      textArea.value = textToCopy;
+      textArea.value = texto;
       textArea.style.position = "fixed";
       textArea.style.left = "-999999px";
       document.body.appendChild(textArea);
       textArea.focus();
       textArea.select();
-      try {
-        document.execCommand("copy");
-        setCopied(true);
-        toast.success("Comentário copiado!");
-      } catch {
-        toast.error("Não foi possível copiar");
-      }
+      document.execCommand("copy");
       document.body.removeChild(textArea);
-      
-      if (empresa?.link_google) {
-        window.open(empresa.link_google, "_blank");
-      }
     }
+
+    await salvarFeedback("google", texto);
+    setCopied(true);
+    toast.success("Comentário copiado!");
+    setTimeout(() => {
+      if (empresa?.link_google) window.open(empresa.link_google, "_blank");
+    }, 500);
   };
 
   const handleWhatsApp = async () => {
     if (!empresa?.whatsapp_empresa) return;
-    
-    // Não salvar feedback no modo demo
-    if (!isDemo && empresa.id) {
-      await supabase.from("feedbacks").insert({
-        empresa_id: empresa.id,
-        nota,
-        comentario,
-        tipo_envio: "whatsapp",
-      });
-    }
-
-    const message = encodeURIComponent(comentario || "Feedback");
+    const texto = montarFeedback(true);
+    await salvarFeedback("whatsapp", texto);
     const phone = empresa.whatsapp_empresa.replace(/\D/g, "");
-    window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(texto)}`, "_blank");
   };
 
   const handleEmail = async () => {
     if (!empresa?.email_empresa) return;
-    
-    // Não salvar feedback no modo demo
-    if (!isDemo && empresa.id) {
-      await supabase.from("feedbacks").insert({
-        empresa_id: empresa.id,
-        nota,
-        comentario,
-        tipo_envio: "email",
-      });
-    }
-
-    const subject = encodeURIComponent("Feedback Crítico");
-    const body = encodeURIComponent(comentario || "Feedback");
-    window.open(`mailto:${empresa.email_empresa}?subject=${subject}&body=${body}`, "_blank");
+    const texto = montarFeedback(true);
+    await salvarFeedback("email", texto);
+    const subject = encodeURIComponent("Solicitação de retorno — avaliação");
+    window.open(`mailto:${empresa.email_empresa}?subject=${subject}&body=${encodeURIComponent(texto)}`, "_blank");
   };
 
   const handleFinalizar = async () => {
-    // Não salvar feedback no modo demo
-    if (!isDemo && empresa?.id) {
-      await supabase.from("feedbacks").insert({
-        empresa_id: empresa.id,
-        nota,
-        comentario: comentario || "Anônimo",
-        tipo_envio: "anonimo",
-      });
-    }
+    const solicitouRetorno = etapa === "retorno";
+    await salvarFeedback(solicitouRetorno ? "direto" : "anonimo", montarFeedback(solicitouRetorno));
     setSubmitted(true);
   };
 
   const isPositive = nota >= 4;
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-slate-200" />
-          <div className="h-3 w-24 bg-slate-200 rounded" />
-        </div>
-      </div>
-    );
+    return <div className="min-h-screen paper-screen flex items-center justify-center"><div className="h-8 w-8 animate-spin border-2 border-[#687887] border-t-[#d6a66a]" /></div>;
   }
 
   if (!empresa) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <div className="bg-white rounded-xl shadow-xl shadow-slate-200/40 p-10 max-w-sm w-full text-center border border-slate-100/80">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-slate-100 flex items-center justify-center">
-            <Star className="w-7 h-7 text-slate-400" strokeWidth={1.5} />
-          </div>
-          <h1 className="text-lg font-semibold text-slate-800">Empresa não encontrada</h1>
-          <p className="mt-3 text-slate-500 text-sm">
-            Verifique se o link está correto.
-          </p>
-        </div>
+      <div className="min-h-screen paper-screen flex items-center justify-center p-4">
+        <div className="review-card max-w-sm border border-slate-100/80 p-10 text-center"><div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center bg-slate-100"><Star className="h-7 w-7 text-slate-400" strokeWidth={1.5} /></div><h1 className="text-lg font-semibold text-slate-800">Empresa não encontrada</h1><p className="mt-3 text-sm text-slate-500">Verifique se o link está correto.</p></div>
       </div>
     );
   }
 
-  // Bloqueio por assinatura inativa
-  if (!empresa.status_assinatura && !isDemo) {
-    return <ServicoSuspenso />;
-  }
+  if (!empresa.status_assinatura && !isDemo) return <ServicoSuspenso />;
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <div className="bg-white rounded-xl shadow-xl shadow-slate-200/40 p-10 max-w-sm w-full text-center border border-slate-100/80 animate-fade-in">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-slate-900 flex items-center justify-center">
-            <CheckCircle2 className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-xl font-semibold text-slate-800 tracking-tight">Obrigado pelo seu feedback</h1>
-          <p className="mt-3 text-slate-500 text-sm">
-            Sua avaliação foi registrada com sucesso.
-          </p>
-          {isDemo && (
-            <p className="mt-6 text-xs text-slate-500 bg-slate-100 rounded-lg px-4 py-2">
-              Modo demonstração — nenhum dado foi salvo
-            </p>
-          )}
-        </div>
-      </div>
+      <main className="ink-shell flex items-center justify-center p-5">
+        <section className="portal-panel w-full max-w-xl p-8 text-center sm:p-12">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[#d6a66a] bg-[#d6a66a]/10 text-[#d6a66a]"><CheckCircle2 className="h-7 w-7" /></div>
+          <p className="eyebrow mt-7 text-[#d6a66a]">Reclamação registrada</p>
+          <h1 className="display-title mt-3 text-3xl text-[#f5f0e5]">Obrigado por compartilhar sua experiência.</h1>
+          <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-[#c1c9cf]">Seu relato foi registrado. Vamos trabalhar para evoluir continuamente e oferecer uma experiência melhor nas próximas oportunidades.</p>
+          {isDemo && <p className="mt-7 border border-[#526170] bg-white/5 px-4 py-3 text-xs text-[#aeb8c0]">Modo demonstração — nenhum dado foi salvo.</p>}
+        </section>
+      </main>
     );
   }
 
-  // Etapa 1: Coleta Neutra e Elegante
   if (etapa === "coleta") {
     return (
-      <div className="min-h-screen bg-slate-50 py-12 px-4">
-        <div className="max-w-md mx-auto">
-          {/* Demo badge - Discreto */}
-          {isDemo && (
-            <div className="text-center mb-8 animate-fade-in">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-900 text-white text-xs font-medium">
-                Demonstração
-              </span>
-            </div>
-          )}
-
-          {/* Header - Limpo e Profissional */}
-          <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-xl sm:text-2xl font-semibold text-slate-800 mb-3 leading-tight tracking-tight">
-              Obrigado por escolher a{" "}
-              <span className="text-slate-900 font-bold">
-                {empresa.nome_exibicao}
-              </span>
-            </h1>
-            <p className="text-slate-500 text-sm leading-relaxed max-w-xs mx-auto">
-              Sua opinião nos ajuda a melhorar continuamente.
-            </p>
-          </div>
-
-          {/* Card principal - Executivo */}
-          <div className="bg-white rounded-xl shadow-xl shadow-slate-200/40 p-8 sm:p-10 border border-slate-100/80 animate-fade-in">
-            {/* Estrelas com mais respiro */}
-            <div className="flex justify-center mb-12">
-              <StarRating value={nota} onChange={setNota} />
-            </div>
-
-            {/* Textarea - Discreto */}
-            <div className="mb-10">
-              <Textarea
-                placeholder="Conte-nos sobre sua experiência (opcional)"
-                value={comentario}
-                onChange={(e) => setComentario(e.target.value)}
-                className="min-h-[120px] resize-none rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-300 focus:ring-slate-100 transition-all duration-200 placeholder:text-slate-400 text-slate-700 text-sm"
-              />
-            </div>
-
-            {/* Botão - Sóbrio e Executivo */}
-            <Button
-              onClick={handleRegistrar}
-              className="w-full h-12 text-sm font-medium rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-all duration-200 shadow-md hover:shadow-lg"
-              size="lg"
-            >
-              Enviar Avaliação
-            </Button>
-          </div>
-
-          {/* Footer discreto */}
-          <p className="text-center text-xs text-slate-400 mt-8">
-            Powered by SIA
-          </p>
+      <main className="min-h-screen paper-screen px-4 py-12">
+        <div className="mx-auto max-w-md">
+          {isDemo && <div className="mb-8 text-center"><span className="inline-flex bg-slate-900 px-3 py-1.5 text-xs font-medium text-white">Demonstração</span></div>}
+          <header className="mb-12 text-center"><p className="eyebrow">Sua avaliação</p><h1 className="display-title mt-3 text-3xl text-slate-800">Obrigado por escolher a <span className="font-bold">{empresa.nome_exibicao}</span></h1><p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-slate-500">Sua opinião nos ajuda a melhorar continuamente.</p></header>
+          <section className="review-card border border-slate-100/80 p-8 sm:p-10"><div className="mb-12 flex justify-center"><StarRating value={nota} onChange={setNota} /></div><div className="mb-10"><Textarea placeholder="Conte-nos sobre sua experiência (opcional)" value={comentario} onChange={(e) => setComentario(e.target.value)} className="min-h-[120px] resize-none rounded-lg border-slate-200 bg-slate-50 text-sm text-slate-700 placeholder:text-slate-400 focus:border-slate-300 focus:bg-white focus:ring-slate-100" /></div><Button onClick={handleRegistrar} className="legacy-button h-12 w-full text-sm font-bold" size="lg">Enviar avaliação</Button></section>
+          <p className="mt-8 text-center text-xs text-slate-400">Powered by SIA</p>
         </div>
-      </div>
+      </main>
     );
   }
 
-  // Etapa 2: Desfecho Condicional - Elegante
+  if (etapa === "retorno") {
+    return (
+      <main className="min-h-screen paper-screen px-4 py-10 sm:py-14">
+        <div className="mx-auto max-w-md animate-fade-in">
+          <header className="mb-8 text-center"><div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center border border-[#b9c1c9] bg-[#ece9df] text-[#214d76]"><UserRound className="h-5 w-5" /></div><p className="eyebrow">Atendimento e acompanhamento</p><h1 className="display-title mt-3 text-3xl text-slate-800">Queremos ajudar.</h1><p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-slate-500">Deixe uma forma de contato se desejar receber um retorno sobre sua reclamação.</p></header>
+          <section className="review-card border border-slate-100/80 p-7 sm:p-9">
+            <div className="space-y-5"><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="comentario-retorno">Seu relato</label><Textarea id="comentario-retorno" placeholder="Descreva o que podemos melhorar..." value={comentario} onChange={(e) => setComentario(e.target.value)} className="mt-2 min-h-[110px] resize-none rounded-lg border-slate-200 bg-slate-50 text-sm text-slate-700 placeholder:text-slate-400 focus:border-slate-300 focus:bg-white focus:ring-slate-100" /></div><div className="grid gap-4 sm:grid-cols-2"><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="nome-retorno">Nome <span className="font-normal normal-case tracking-normal">(opcional)</span></label><Input id="nome-retorno" value={nomeRetorno} onChange={(e) => setNomeRetorno(e.target.value)} placeholder="Como podemos chamar você?" className="legacy-field mt-2 px-3 text-sm" /></div><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="contato-retorno">Telefone ou e-mail <span className="font-normal normal-case tracking-normal">(opcional)</span></label><Input id="contato-retorno" value={contatoRetorno} onChange={(e) => setContatoRetorno(e.target.value)} placeholder="Seu melhor contato" className="legacy-field mt-2 px-3 text-sm" /></div></div></div>
+            {(empresa.whatsapp_empresa || empresa.email_empresa) && <div className="mt-8 border-t border-[#d6cebf] pt-6"><p className="text-center text-sm leading-6 text-[#5d6872]">Gostaria de uma solução imediata para o seu caso? Nos envie diretamente nos botões abaixo.</p><div className="mt-4 space-y-3">{empresa.whatsapp_empresa && <Button onClick={handleWhatsApp} variant="outline" className="h-12 w-full gap-3 border-[#bdb3a0] text-sm text-[#31495f] hover:bg-[#ece9df]"><MessageCircle className="h-4 w-4" />Enviar via WhatsApp</Button>}{empresa.email_empresa && <Button onClick={handleEmail} variant="outline" className="h-12 w-full gap-3 border-[#bdb3a0] text-sm text-[#31495f] hover:bg-[#ece9df]"><Mail className="h-4 w-4" />Enviar via e-mail</Button>}</div></div>}
+            <div className="mt-7 border-t border-[#d6cebf] pt-6"><Button onClick={handleFinalizar} className="legacy-button h-12 w-full text-sm font-bold" size="lg">Registrar e finalizar</Button><button onClick={() => setEtapa("coleta")} className="mt-4 flex w-full items-center justify-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-slate-700"><Pencil className="h-3.5 w-3.5" strokeWidth={1.5} />Alterar nota</button></div>
+          </section>
+          <p className="mt-7 text-center text-xs text-slate-400">Powered by SIA</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4">
-      <div className="max-w-md mx-auto animate-fade-in">
-        {/* Demo badge - Discreto */}
-        {isDemo && (
-          <div className="text-center mb-8">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-900 text-white text-xs font-medium">
-              Demonstração
-            </span>
-          </div>
-        )}
-
+    <main className={isPositive ? "positive-stage min-h-screen px-4 py-10 sm:py-14" : "min-h-screen paper-screen px-4 py-10 sm:py-14"}>
+      <div className="mx-auto max-w-md animate-fade-in">
+        {isDemo && <div className="mb-6 text-center"><span className="inline-flex bg-[#f5f0e5]/10 px-3 py-1.5 text-xs font-medium text-[#f5f0e5]">Demonstração</span></div>}
         {isPositive ? (
-          // Cenário A: Nota 4 ou 5 - Sucesso Elegante
-          <div className="bg-white rounded-xl shadow-xl shadow-slate-200/40 p-8 sm:p-12 border border-slate-100/80">
-            {/* Ícone elegante com animação de check */}
-            <div className="text-center mb-10">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg animate-fade-in">
-                <CheckCircle2 className="w-8 h-8 text-white" />
-              </div>
-              <h1 className="text-xl sm:text-2xl font-semibold text-slate-800 tracking-tight">
-                Agradecemos o seu reconhecimento
-              </h1>
-            <p className="text-slate-500 text-sm mt-2">
-              Sua opinião é muito importante para nós.
-            </p>
-          </div>
-
-          {/* Comentário editável */}
-          <div className="mb-8">
-            <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Seu comentário</p>
-            <Textarea
-              placeholder="Adicione ou edite seu comentário..."
-              value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
-              className="min-h-[100px] resize-none rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-300 focus:ring-slate-100 transition-all duration-200 placeholder:text-slate-400 text-slate-700 text-sm"
-            />
-          </div>
-
-          {/* Instruções discretas */}
-          <p className="text-sm text-slate-500 text-center mb-6 leading-relaxed max-w-sm mx-auto">
-            Ao clicar no botão, seu texto será copiado automaticamente. Basta colar na avaliação do Google.
-          </p>
-
-          {/* Box de Inspiração - Discreto */}
-          {empresa.modelo_sugestao && (
-            <div className="border border-slate-200 rounded-lg p-5 mb-8 bg-slate-50/50">
-              <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Exemplo de avaliação com descrição de serviço</p>
-              <p className="text-sm text-slate-600 italic leading-relaxed">
-                "{empresa.modelo_sugestao}"
-              </p>
-            </div>
-          )}
-
-            {/* Botão principal - Executivo */}
-            <Button
-              onClick={handleCopyAndRedirect}
-              className="w-full h-12 text-sm font-medium rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-all duration-200 shadow-md hover:shadow-lg gap-2"
-              size="lg"
-            >
-              {copied ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                  <span>Copiado — Abrindo Google</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4 flex-shrink-0" />
-                  <span>Copiar e Avaliar no Google</span>
-                  <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 opacity-60" />
-                </>
-              )}
-            </Button>
-
-            {/* Editar nota */}
-            <button
-              onClick={() => setEtapa("coleta")}
-              className="w-full mt-4 text-sm text-slate-500 hover:text-slate-700 transition-colors duration-200 flex items-center justify-center gap-1.5"
-            >
-              <Pencil className="w-3.5 h-3.5" strokeWidth={1.5} />
-              Alterar nota
-            </button>
-          </div>
+          <section className="positive-panel p-7 text-center sm:p-9">
+            <div className="flex justify-center gap-1 text-[#efbf43]">{Array.from({ length: 5 }).map((_, index) => <Star key={index} className="h-5 w-5 fill-current" />)}</div>
+            <p className="mt-5 text-[10px] font-bold uppercase tracking-[.18em] text-[#efbf43]">Muito obrigado</p>
+            <h1 className="display-title mx-auto mt-3 max-w-sm text-3xl leading-tight text-[#f9f3e7] sm:text-4xl">Obrigado por escolher a <strong>{empresa.nome_exibicao}</strong>.</h1>
+            <p className="mx-auto mt-5 max-w-sm text-sm leading-6 text-[#d6d0c4]">Sua experiência é importante para nós. Se você gostou do atendimento, uma avaliação ajuda outras pessoas a conhecerem a {empresa.nome_exibicao}.</p>
+            <div className="mt-7 text-left"><label className="text-[10px] font-bold uppercase tracking-[.14em] text-[#d4cbbb]" htmlFor="comentario-positivo">Seu comentário</label><Textarea id="comentario-positivo" placeholder="Adicione ou edite seu comentário..." value={comentario} onChange={(e) => setComentario(e.target.value)} className="mt-2 min-h-[96px] resize-none border-[#6b665e] bg-black/20 text-sm text-[#f9f3e7] placeholder:text-[#aaa399] focus:border-[#d6a66a] focus:ring-[#d6a66a]/20" /></div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2"><div className="positive-tip"><Camera className="mx-auto h-4 w-4 text-[#efbf43]" /><p>Se puder, tire uma foto do produto ou do serviço realizado.</p></div><div className="positive-tip"><PenLine className="mx-auto h-4 w-4 text-[#efbf43]" /><p>Comente o que achou do atendimento e cite o nome do produto ou serviço.</p></div></div>
+            {empresa.modelo_sugestao && <div className="mt-4 border border-[#625c55] bg-black/10 p-4 text-left"><p className="text-[10px] font-bold uppercase tracking-[.13em] text-[#d4cbbb]">Sugestão de mensagem</p><p className="mt-2 text-sm leading-6 text-[#e8e0d2]">“{empresa.modelo_sugestao}”</p></div>}
+            <Button onClick={handleCopyAndRedirect} className="positive-cta mt-6 h-12 w-full gap-2 text-sm font-bold" size="lg">{copied ? <><CheckCircle2 className="h-4 w-4" />Copiado — abrindo Google</> : <><Copy className="h-4 w-4" />Copiar e avaliar no Google <ExternalLink className="h-3.5 w-3.5 opacity-75" /></>}</Button>
+            <button onClick={() => setEtapa("coleta")} className="mt-5 flex w-full items-center justify-center gap-1.5 text-sm text-[#c7c0b4] transition-colors hover:text-[#f9f3e7]"><Pencil className="h-3.5 w-3.5" strokeWidth={1.5} />Alterar nota</button>
+            <p className="mt-7 text-[11px] text-[#aaa399]">SIA — Sistema Inteligente de Avaliações</p>
+          </section>
         ) : (
-          // Cenário B: Nota 1, 2 ou 3 - Acolhimento Elegante
-          <div className="bg-white rounded-xl shadow-xl shadow-slate-200/40 p-8 sm:p-12 border border-slate-100/80">
-            <div className="text-center mb-10">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-slate-100 flex items-center justify-center">
-                <MessageCircle className="w-7 h-7 text-slate-500" strokeWidth={1.5} />
-              </div>
-              <h1 className="text-xl sm:text-2xl font-semibold text-slate-800 tracking-tight">
-                Lamentamos que sua experiência não tenha sido ideal
-              </h1>
-              <p className="text-slate-500 text-sm mt-2 max-w-xs mx-auto">
-                Gostaríamos de entender melhor o que aconteceu.
-              </p>
-            </div>
-
-          {/* Comentário editável */}
-          <div className="mb-8">
-            <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Seu comentário</p>
-            <Textarea
-              placeholder="Descreva o que podemos melhorar..."
-              value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
-              className="min-h-[100px] resize-none rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-300 focus:ring-slate-100 transition-all duration-200 placeholder:text-slate-400 text-slate-700 text-sm"
-            />
-          </div>
-
-          {/* Pergunta */}
-          <p className="text-sm text-slate-500 text-center mb-8 leading-relaxed">
-            Deseja encaminhar seu feedback diretamente à nossa equipe?
-          </p>
-
-            {/* Botões de ação - Outline elegante */}
-            <div className="space-y-3">
-              {empresa.whatsapp_empresa && (
-                <Button
-                  onClick={handleWhatsApp}
-                  variant="outline"
-                  className="w-full h-12 text-sm gap-3 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
-                  size="lg"
-                >
-                  <MessageCircle className="w-4 h-4" strokeWidth={1.5} />
-                  Enviar via WhatsApp
-                </Button>
-              )}
-
-              {empresa.email_empresa && (
-                <Button
-                  onClick={handleEmail}
-                  variant="outline"
-                  className="w-full h-12 text-sm gap-3 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
-                  size="lg"
-                >
-                  <Mail className="w-4 h-4" strokeWidth={1.5} />
-                  Enviar via E-mail
-                </Button>
-              )}
-
-              <div className="pt-2">
-                <Button
-                  onClick={handleFinalizar}
-                  className="w-full h-12 text-sm font-medium rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition-all duration-200 shadow-md hover:shadow-lg"
-                  size="lg"
-                >
-                  Finalizar avaliação
-                </Button>
-              </div>
-
-              {/* Editar nota */}
-              <button
-                onClick={() => setEtapa("coleta")}
-                className="w-full mt-2 text-sm text-slate-500 hover:text-slate-700 transition-colors duration-200 flex items-center justify-center gap-1.5"
-              >
-                <Pencil className="w-3.5 h-3.5" strokeWidth={1.5} />
-                Alterar nota
-              </button>
-            </div>
-          </div>
+          <section className="review-card border border-slate-100/80 p-8 sm:p-10">
+            <header className="text-center"><div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center border border-[#b9c1c9] bg-[#ece9df] text-[#214d76]"><MessageCircle className="h-6 w-6" strokeWidth={1.5} /></div><p className="eyebrow">Sua opinião importa</p><h1 className="display-title mt-3 text-3xl text-slate-800">Lamentamos que sua experiência não tenha sido ideal.</h1><p className="mt-3 text-sm leading-6 text-slate-500">Seu relato nos ajuda a entender e melhorar.</p></header>
+            <div className="mt-8"><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="comentario-negativo">Seu comentário</label><Textarea id="comentario-negativo" placeholder="Descreva o que podemos melhorar..." value={comentario} onChange={(e) => setComentario(e.target.value)} className="mt-2 min-h-[110px] resize-none rounded-lg border-slate-200 bg-slate-50 text-sm text-slate-700 placeholder:text-slate-400 focus:border-slate-300 focus:bg-white focus:ring-slate-100" /></div>
+            <div className="mt-7 border-y border-[#d6cebf] py-6 text-center"><p className="text-base font-semibold leading-6 text-[#233d55]">Deseja receber um retorno sobre sua reclamação?</p><div className="mt-5 grid gap-3 sm:grid-cols-2"><Button onClick={() => setEtapa("retorno")} className="legacy-button h-12 text-sm font-bold">Sim</Button><Button onClick={handleFinalizar} variant="outline" className="h-12 border-[#bdb3a0] text-sm font-semibold text-[#31495f] hover:bg-[#ece9df]">Registrar e finalizar</Button></div></div>
+            <button onClick={() => setEtapa("coleta")} className="mt-5 flex w-full items-center justify-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-slate-700"><Pencil className="h-3.5 w-3.5" strokeWidth={1.5} />Alterar nota</button>
+          </section>
         )}
-
-        {/* Footer discreto */}
-        <p className="text-center text-xs text-slate-400 mt-6">
-          Powered by SIA
-        </p>
       </div>
-    </div>
+    </main>
   );
 }
