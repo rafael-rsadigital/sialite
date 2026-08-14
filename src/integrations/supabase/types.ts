@@ -225,26 +225,55 @@ export type Database = {
           status_assinatura: boolean | null
           whatsapp_empresa: string | null
         }
+        Insert: {
+          email_empresa?: string | null
+          link_google?: string | null
+          modelo_sugestao?: string | null
+          nome_exibicao?: string | null
+          slug?: string | null
+          status_assinatura?: boolean | null
+          whatsapp_empresa?: string | null
+        }
+        Update: {
+          email_empresa?: string | null
+          link_google?: string | null
+          modelo_sugestao?: string | null
+          nome_exibicao?: string | null
+          slug?: string | null
+          status_assinatura?: boolean | null
+          whatsapp_empresa?: string | null
+        }
         Relationships: []
       }
     }
     Functions: {
       atribuir_acesso: {
         Args: {
-          p_empresa_id?: string | null
-          p_gestor_id?: string | null
-          p_nome_exibicao?: string | null
+          p_empresa_id?: string
+          p_gestor_id?: string
+          p_nome_exibicao?: string
           p_papel: Database["public"]["Enums"]["papel_sia"]
           p_usuario_id: string
         }
         Returns: undefined
       }
+      designar_primeiro_administrador: {
+        Args: { p_email: string }
+        Returns: undefined
+      }
+      eh_administrador: { Args: never; Returns: boolean }
+      empresa_atual_id: { Args: never; Returns: string }
+      gestor_atual_id: { Args: never; Returns: string }
+      papel_atual: {
+        Args: never
+        Returns: Database["public"]["Enums"]["papel_sia"]
+      }
       registrar_feedback_publico: {
         Args: {
-          p_comentario?: string | null
+          p_comentario?: string
           p_nota: number
           p_slug: string
-          p_tipo_envio?: string | null
+          p_tipo_envio?: string
         }
         Returns: string
       }
@@ -377,6 +406,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      papel_sia: ["administrador", "gestor", "empresa"],
+    },
   },
 } as const
