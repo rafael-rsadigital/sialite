@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       empresas: {
         Row: {
+          cancelado_em: string | null
+          ciclo_cobranca: string
           created_at: string
           data_vencimento: string | null
           email_empresa: string | null
@@ -26,12 +28,17 @@ export type Database = {
           link_google: string | null
           modelo_sugestao: string | null
           nome_exibicao: string
+          periodo_teste_ate: string | null
+          plano_assinatura: string
           slug: string
           status_assinatura: boolean
+          status_cobranca: string
           valor_assinatura: number | null
           whatsapp_empresa: string | null
         }
         Insert: {
+          cancelado_em?: string | null
+          ciclo_cobranca?: string
           created_at?: string
           data_vencimento?: string | null
           email_empresa?: string | null
@@ -42,12 +49,17 @@ export type Database = {
           link_google?: string | null
           modelo_sugestao?: string | null
           nome_exibicao: string
+          periodo_teste_ate?: string | null
+          plano_assinatura?: string
           slug: string
           status_assinatura?: boolean
+          status_cobranca?: string
           valor_assinatura?: number | null
           whatsapp_empresa?: string | null
         }
         Update: {
+          cancelado_em?: string | null
+          ciclo_cobranca?: string
           created_at?: string
           data_vencimento?: string | null
           email_empresa?: string | null
@@ -58,8 +70,11 @@ export type Database = {
           link_google?: string | null
           modelo_sugestao?: string | null
           nome_exibicao?: string
+          periodo_teste_ate?: string | null
+          plano_assinatura?: string
           slug?: string
           status_assinatura?: boolean
+          status_cobranca?: string
           valor_assinatura?: number | null
           whatsapp_empresa?: string | null
         }
@@ -153,15 +168,89 @@ export type Database = {
         }
         Relationships: []
       }
+      perfis: {
+        Row: {
+          created_at: string
+          empresa_id: string | null
+          gestor_id: string | null
+          id: string
+          nome_exibicao: string | null
+          papel: Database["public"]["Enums"]["papel_sia"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          empresa_id?: string | null
+          gestor_id?: string | null
+          id: string
+          nome_exibicao?: string | null
+          papel?: Database["public"]["Enums"]["papel_sia"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          empresa_id?: string | null
+          gestor_id?: string | null
+          id?: string
+          nome_exibicao?: string | null
+          papel?: Database["public"]["Enums"]["papel_sia"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfis_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "perfis_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "gestores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      empresas_publicas: {
+        Row: {
+          email_empresa: string | null
+          link_google: string | null
+          modelo_sugestao: string | null
+          nome_exibicao: string | null
+          slug: string | null
+          status_assinatura: boolean | null
+          whatsapp_empresa: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      atribuir_acesso: {
+        Args: {
+          p_empresa_id?: string | null
+          p_gestor_id?: string | null
+          p_nome_exibicao?: string | null
+          p_papel: Database["public"]["Enums"]["papel_sia"]
+          p_usuario_id: string
+        }
+        Returns: undefined
+      }
+      registrar_feedback_publico: {
+        Args: {
+          p_comentario?: string | null
+          p_nota: number
+          p_slug: string
+          p_tipo_envio?: string | null
+        }
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      papel_sia: "administrador" | "gestor" | "empresa"
     }
     CompositeTypes: {
       [_ in never]: never

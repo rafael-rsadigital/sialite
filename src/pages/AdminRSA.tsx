@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Lock, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, Zap, Building2, UserPlus, LayoutDashboard, Save, Trash2 } from "lucide-react";
+import { Shield, Lock, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, Zap, Building2, UserPlus, LayoutDashboard, Save, Trash2, Pencil, LogOut, Mail } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { encerrarSessao, obterPerfilAtual } from "@/lib/auth";
 import { toast } from "sonner";
 
 interface Empresa {
@@ -26,6 +27,10 @@ interface Empresa {
   email_empresa: string | null;
   modelo_sugestao: string | null;
   gestor_id: string | null;
+  plano_assinatura: string;
+  ciclo_cobranca: string;
+  status_cobranca: string;
+  periodo_teste_ate: string | null;
   created_at: string;
 }
 
@@ -37,10 +42,9 @@ interface Gestor {
   created_at: string;
 }
 
-const ADMIN_PASSWORD = "RSASuce$$o2026";
-
 export default function AdminRSA() {
   const [autenticado, setAutenticado] = useState(false);
+  const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erroSenha, setErroSenha] = useState("");
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
@@ -65,23 +69,68 @@ export default function AdminRSA() {
     whatsapp_empresa: "",
     email_empresa: "",
     modelo_sugestao: "",
+    plano_assinatura: "essencial",
+    ciclo_cobranca: "mensal",
+    status_cobranca: "ativo",
+    periodo_teste_ate: "",
   });
   const [savingEmpresa, setSavingEmpresa] = useState(false);
+  const [editingEmpresaId, setEditingEmpresaId] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const limparFormularioEmpresa = () => {
+    setEditingEmpresaId(null);
+    setEmpresaForm({ nome_exibicao: "", slug: "", hash_secreto: "", link_google: "", link_asaas: "", valor_assinatura: "", data_vencimento: "", gestor_id: "", whatsapp_empresa: "", email_empresa: "", modelo_sugestao: "", plano_assinatura: "essencial", ciclo_cobranca: "mensal", status_cobranca: "ativo", periodo_teste_ate: "" });
+  };
+
+  const iniciarEdicaoEmpresa = (empresa: Empresa) => {
+    setEditingEmpresaId(empresa.id);
+    setEmpresaForm({
+      nome_exibicao: empresa.nome_exibicao,
+      slug: empresa.slug,
+      hash_secreto: empresa.hash_secreto,
+      link_google: empresa.link_google || "",
+      link_asaas: empresa.link_asaas || "",
+      valor_assinatura: empresa.valor_assinatura?.toString() || "",
+      data_vencimento: empresa.data_vencimento || "",
+      gestor_id: empresa.gestor_id || "",
+      whatsapp_empresa: empresa.whatsapp_empresa || "",
+      email_empresa: empresa.email_empresa || "",
+      modelo_sugestao: empresa.modelo_sugestao || "",
+      plano_assinatura: empresa.plano_assinatura || "essencial",
+      ciclo_cobranca: empresa.ciclo_cobranca || "mensal",
+      status_cobranca: empresa.status_cobranca || "ativo",
+      periodo_teste_ate: empresa.periodo_teste_ate || "",
+    });
+    setActiveTab("empresas");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (senha === ADMIN_PASSWORD) {
-      setAutenticado(true);
-      setErroSenha("");
-    } else {
-      setErroSenha("Palavra-chave incorreta");
+    if (!email.trim() || !senha) { setErroSenha("Informe seu e-mail e sua senha"); return; }
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: senha });
+    if (error || !data.user) { setErroSenha("E-mail ou senha inválidos"); return; }
+    const perfil = await obterPerfilAtual();
+    if (perfil?.papel !== "administrador") {
+      await encerrarSessao();
+      setErroSenha("Esta conta não possui permissão de administrador");
+      return;
     }
+    setAutenticado(true);
+    setErroSenha("");
   };
 
   useEffect(() => {
-    if (autenticado) {
-      fetchData();
+    async function recuperarSessao() {
+      const perfil = await obterPerfilAtual();
+      if (perfil?.papel === "administrador") setAutenticado(true);
+      else setLoading(false);
     }
+    recuperarSessao();
+  }, []);
+
+  useEffect(() => {
+    if (autenticado) fetchData();
   }, [autenticado]);
 
   const fetchData = async () => {
@@ -177,7 +226,7 @@ export default function AdminRSA() {
     }
 
     setSavingEmpresa(true);
-    const { data, error } = await supabase.from("empresas").insert({
+    const payload = {
       nome_exibicao: empresaForm.nome_exibicao.trim(),
       slug: empresaForm.slug.toLowerCase().trim(),
       hash_secreto: empresaForm.hash_secreto.trim(),
@@ -189,26 +238,23 @@ export default function AdminRSA() {
       whatsapp_empresa: empresaForm.whatsapp_empresa.replace(/\D/g, "") || null,
       email_empresa: empresaForm.email_empresa.trim() || null,
       modelo_sugestao: empresaForm.modelo_sugestao.trim() || null,
-    }).select().single();
+      plano_assinatura: empresaForm.plano_assinatura,
+      ciclo_cobranca: empresaForm.ciclo_cobranca,
+      status_cobranca: empresaForm.status_cobranca,
+      periodo_teste_ate: empresaForm.periodo_teste_ate || null,
+    };
+
+    const request = editingEmpresaId
+      ? supabase.from("empresas").update(payload).eq("id", editingEmpresaId).select().single()
+      : supabase.from("empresas").insert(payload).select().single();
+    const { data, error } = await request;
 
     if (error) {
       toast.error(error.message.includes("duplicate") ? "Slug já existe" : "Erro ao salvar empresa");
-    } else {
-      toast.success("Empresa cadastrada com sucesso!");
-      setEmpresas([data, ...empresas]);
-      setEmpresaForm({
-        nome_exibicao: "",
-        slug: "",
-        hash_secreto: "",
-        link_google: "",
-        link_asaas: "",
-        valor_assinatura: "",
-        data_vencimento: "",
-        gestor_id: "",
-        whatsapp_empresa: "",
-        email_empresa: "",
-        modelo_sugestao: "",
-      });
+    } else if (data) {
+      toast.success(editingEmpresaId ? "Empresa atualizada com sucesso!" : "Empresa cadastrada com sucesso!");
+      setEmpresas((atual) => editingEmpresaId ? atual.map((empresa) => empresa.id === data.id ? data : empresa) : [data, ...atual]);
+      limparFormularioEmpresa();
     }
     setSavingEmpresa(false);
   };
@@ -237,12 +283,21 @@ export default function AdminRSA() {
             </div>
 
             <h1 className="text-2xl font-bold text-white mb-2">Painel RSA Digital</h1>
-            <p className="text-slate-400 mb-8">Digite a palavra-chave do administrador</p>
+            <p className="text-slate-400 mb-8">Entre com a conta administrativa cadastrada no Supabase</p>
 
             <form onSubmit={handleLogin} className="space-y-4">
+              <div className="relative"><Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" /><Input
+                type="email"
+                autoComplete="email"
+                placeholder="administrador@empresa.com"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setErroSenha(""); }}
+                className="bg-white/5 border-white/10 pl-10 text-white placeholder:text-slate-500 h-12 focus:border-violet-500/50 focus:ring-violet-500/20"
+              /></div>
               <Input
                 type="password"
-                placeholder="Palavra-Chave do Administrador"
+                autoComplete="current-password"
+                placeholder="Senha"
                 value={senha}
                 onChange={(e) => { setSenha(e.target.value); setErroSenha(""); }}
                 className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 h-12 focus:border-violet-500/50 focus:ring-violet-500/20"
@@ -273,14 +328,17 @@ export default function AdminRSA() {
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8 animate-fade-in">
-            <div className="flex items-center gap-4 mb-2">
+            <div className="flex items-center justify-between gap-4 mb-2">
+              <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
                 <Shield className="w-6 h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">Painel RSA Digital</h1>
-                <p className="text-slate-400 text-sm">Gestão Completa do SIA</p>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Painel RSA Digital</h1>
+                  <p className="text-slate-400 text-sm">Gestão Completa do SIA</p>
+                </div>
               </div>
+              <Button variant="ghost" size="sm" onClick={async () => { await encerrarSessao(); setAutenticado(false); }} className="text-slate-300 hover:bg-white/10 hover:text-white"><LogOut className="mr-2 h-4 w-4" />Sair</Button>
             </div>
           </div>
 
@@ -376,6 +434,7 @@ export default function AdminRSA() {
                             <TableHead className="text-slate-400">Vencimento</TableHead>
                             <TableHead className="text-slate-400">Valor</TableHead>
                             <TableHead className="text-slate-400">Pagamento</TableHead>
+                            <TableHead className="text-right text-slate-400">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -426,19 +485,10 @@ export default function AdminRSA() {
                                 </TableCell>
                                 <TableCell>
                                   {empresa.link_asaas ? (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="border-white/10 text-white hover:bg-white/10"
-                                      onClick={() => window.open(empresa.link_asaas!, '_blank')}
-                                    >
-                                      <ExternalLink className="w-4 h-4 mr-1" />
-                                      Abrir
-                                    </Button>
-                                  ) : (
-                                    <span className="text-slate-500 text-sm">—</span>
-                                  )}
+                                    <Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => window.open(empresa.link_asaas!, '_blank')}><ExternalLink className="w-4 h-4 mr-1" />Abrir</Button>
+                                  ) : <span className="text-slate-500 text-sm">—</span>}
                                 </TableCell>
+                                <TableCell className="text-right"><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => iniciarEdicaoEmpresa(empresa)}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button></TableCell>
                               </TableRow>
                             );
                           })}
@@ -549,13 +599,13 @@ export default function AdminRSA() {
             <TabsContent value="empresas">
               <Card className="bg-white/5 backdrop-blur-sm border-white/10 shadow-xl">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Building2 className="w-5 h-5 text-violet-400" />
-                    Cadastrar Nova Empresa
-                  </CardTitle>
-                  <CardDescription className="text-slate-400">
-                    Adicione empresas ao sistema SIA
-                  </CardDescription>
+                      <CardTitle className="text-white flex items-center gap-2">
+                        <Building2 className="w-5 h-5 text-violet-400" />
+                        {editingEmpresaId ? "Editar Empresa" : "Cadastrar Nova Empresa"}
+                      </CardTitle>
+                      <CardDescription className="text-slate-400">
+                        {editingEmpresaId ? "Atualize os dados do cadastro selecionado" : "Adicione empresas ao sistema SIA"}
+                      </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSaveEmpresa} className="grid md:grid-cols-2 gap-6">
@@ -645,6 +695,49 @@ export default function AdminRSA() {
                           />
                         </div>
                       </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-white/80">Plano</Label>
+                          <Select value={empresaForm.plano_assinatura} onValueChange={(value) => setEmpresaForm({ ...empresaForm, plano_assinatura: value })}>
+                            <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+                            <SelectContent className="bg-slate-900 border-white/10">
+                              <SelectItem value="essencial" className="text-white">Essencial</SelectItem>
+                              <SelectItem value="profissional" className="text-white">Profissional</SelectItem>
+                              <SelectItem value="parceiro" className="text-white">Parceiro</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white/80">Ciclo</Label>
+                          <Select value={empresaForm.ciclo_cobranca} onValueChange={(value) => setEmpresaForm({ ...empresaForm, ciclo_cobranca: value })}>
+                            <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+                            <SelectContent className="bg-slate-900 border-white/10">
+                              <SelectItem value="mensal" className="text-white">Mensal</SelectItem>
+                              <SelectItem value="trimestral" className="text-white">Trimestral</SelectItem>
+                              <SelectItem value="anual" className="text-white">Anual</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-white/80">Status de cobrança</Label>
+                          <Select value={empresaForm.status_cobranca} onValueChange={(value) => setEmpresaForm({ ...empresaForm, status_cobranca: value })}>
+                            <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+                            <SelectContent className="bg-slate-900 border-white/10">
+                              <SelectItem value="teste" className="text-white">Em teste</SelectItem>
+                              <SelectItem value="ativo" className="text-white">Ativo</SelectItem>
+                              <SelectItem value="atrasado" className="text-white">Em atraso</SelectItem>
+                              <SelectItem value="cancelado" className="text-white">Cancelado</SelectItem>
+                              <SelectItem value="isento" className="text-white">Isento</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white/80">Teste até</Label>
+                          <Input type="date" value={empresaForm.periodo_teste_ate} onChange={(e) => setEmpresaForm({ ...empresaForm, periodo_teste_ate: e.target.value })} className="bg-white/5 border-white/10 text-white" />
+                        </div>
+                      </div>
                       <div className="space-y-2">
                         <Label className="text-white/80">WhatsApp</Label>
                         <Input
@@ -676,17 +769,11 @@ export default function AdminRSA() {
                       </div>
                     </div>
 
-                    <div className="md:col-span-2">
-                      <Button type="submit" disabled={savingEmpresa} className="w-full h-12 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-lg font-medium">
-                        {savingEmpresa ? (
-                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                          <>
-                            <Save className="w-5 h-5 mr-2" />
-                            Cadastrar Empresa
-                          </>
-                        )}
+                    <div className="md:col-span-2 flex flex-col gap-3 sm:flex-row">
+                      <Button type="submit" disabled={savingEmpresa} className="h-12 flex-1 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-lg font-medium">
+                        {savingEmpresa ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Save className="w-5 h-5 mr-2" />{editingEmpresaId ? "Salvar Alterações" : "Cadastrar Empresa"}</>}
                       </Button>
+                      {editingEmpresaId && <Button type="button" variant="outline" onClick={limparFormularioEmpresa} className="h-12 border-white/20 text-white hover:bg-white/10">Cancelar edição</Button>}
                     </div>
                   </form>
                 </CardContent>

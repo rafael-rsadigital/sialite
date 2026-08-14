@@ -13,7 +13,6 @@ import siaLogo from "@/assets/sia-lite-logo.png";
 type Etapa = "coleta" | "desfecho" | "retorno";
 
 const DEMO_DATA = {
-  id: "demo",
   nome_exibicao: "Sua Empresa",
   link_google: "https://www.google.com/maps",
   whatsapp_empresa: "5511999999999",
@@ -28,8 +27,7 @@ export default function Avaliacao() {
   const isDemo = slug === "demo";
   const nomeFromQuery = searchParams.get("nome");
   const [empresa, setEmpresa] = useState<{
-    id: string;
-    nome_exibicao: string;
+  nome_exibicao: string;
     link_google: string | null;
     whatsapp_empresa: string | null;
     email_empresa: string | null;
@@ -55,8 +53,8 @@ export default function Avaliacao() {
 
       if (!slug) return;
       const { data, error } = await supabase
-        .from("empresas")
-        .select("id, nome_exibicao, link_google, whatsapp_empresa, email_empresa, modelo_sugestao, status_assinatura")
+        .from("empresas_publicas")
+        .select("nome_exibicao, link_google, whatsapp_empresa, email_empresa, modelo_sugestao, status_assinatura")
         .eq("slug", slug)
         .single();
 
@@ -74,14 +72,18 @@ export default function Avaliacao() {
   }, [slug, isDemo, nomeFromQuery]);
 
   const salvarFeedback = async (tipoEnvio: string, texto: string) => {
-    if (!isDemo && empresa?.id) {
-      await supabase.from("feedbacks").insert({
-        empresa_id: empresa.id,
-        nota,
-        comentario: texto,
-        tipo_envio: tipoEnvio,
-      });
+    if (isDemo || !slug) return true;
+    const { error } = await supabase.rpc("registrar_feedback_publico", {
+      p_slug: slug,
+      p_nota: nota,
+      p_comentario: texto,
+      p_tipo_envio: tipoEnvio,
+    });
+    if (error) {
+      toast.error("Não foi possível registrar sua avaliação. Tente novamente.");
+      return false;
     }
+    return true;
   };
 
   const montarFeedback = (incluirContato = false) => {
@@ -117,7 +119,8 @@ export default function Avaliacao() {
       document.body.removeChild(textArea);
     }
 
-    await salvarFeedback("google", texto);
+    const salvo = await salvarFeedback("google", texto);
+    if (!salvo) return;
     setCopied(true);
     toast.success("Comentário copiado!");
     setTimeout(() => {
@@ -128,7 +131,8 @@ export default function Avaliacao() {
   const handleWhatsApp = async () => {
     if (!empresa?.whatsapp_empresa) return;
     const texto = montarFeedback(true);
-    await salvarFeedback("whatsapp", texto);
+    const salvo = await salvarFeedback("whatsapp", texto);
+    if (!salvo) return;
     const phone = empresa.whatsapp_empresa.replace(/\D/g, "");
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(texto)}`, "_blank");
   };
@@ -136,15 +140,16 @@ export default function Avaliacao() {
   const handleEmail = async () => {
     if (!empresa?.email_empresa) return;
     const texto = montarFeedback(true);
-    await salvarFeedback("email", texto);
+    const salvo = await salvarFeedback("email", texto);
+    if (!salvo) return;
     const subject = encodeURIComponent("Solicitação de retorno — avaliação");
     window.open(`mailto:${empresa.email_empresa}?subject=${subject}&body=${encodeURIComponent(texto)}`, "_blank");
   };
 
   const handleFinalizar = async () => {
     const solicitouRetorno = etapa === "retorno";
-    await salvarFeedback(solicitouRetorno ? "direto" : "anonimo", montarFeedback(solicitouRetorno));
-    setSubmitted(true);
+    const salvo = await salvarFeedback(solicitouRetorno ? "direto" : "anonimo", montarFeedback(solicitouRetorno));
+    if (salvo) setSubmitted(true);
   };
 
   const isPositive = nota >= 4;

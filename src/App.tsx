@@ -22,6 +22,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/av/:slug" element={<Avaliacao />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/:hash" element={<Dashboard />} />
           <Route path="/admin-rsa" element={<AdminRSA />} />
           <Route path="/dashboard-gestor/:gestorId" element={<DashboardGestor />} />

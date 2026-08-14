@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
+import { encerrarSessao, obterPerfilAtual } from "@/lib/auth";
 import { toast } from "sonner";
 
 interface Empresa {
@@ -36,19 +37,32 @@ export default function DashboardGestor() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (gestorId) {
-      fetchData();
-    }
+    if (gestorId) fetchData();
   }, [gestorId]);
 
   const fetchData = async () => {
     setLoading(true);
+    const perfil = await obterPerfilAtual();
+    if (!perfil) {
+      toast.error("Faça login para acessar o painel");
+      navigate("/acesso", { replace: true });
+      return;
+    }
+    if (perfil.papel !== "gestor" || !perfil.gestor_id) {
+      toast.error("Sua conta não tem acesso ao painel de gestor");
+      navigate("/acesso", { replace: true });
+      return;
+    }
+    if (gestorId !== perfil.gestor_id) {
+      navigate(`/dashboard-gestor/${perfil.gestor_id}`, { replace: true });
+      return;
+    }
 
-    // Buscar dados do gestor
+    // Buscar somente o gestor vinculado à sessão autenticada
     const { data: gestorData, error: gestorError } = await supabase
       .from("gestores")
       .select("*")
-      .eq("id", gestorId)
+      .eq("id", perfil.gestor_id)
       .single();
 
     if (gestorError || !gestorData) {
@@ -63,7 +77,7 @@ export default function DashboardGestor() {
     const { data: empresasData, error: empresasError } = await supabase
       .from("empresas")
       .select("*")
-      .eq("gestor_id", gestorId)
+.eq("gestor_id", perfil.gestor_id)
       .order("created_at", { ascending: false });
 
     if (empresasError) {
@@ -131,7 +145,7 @@ export default function DashboardGestor() {
           <div className="mb-8 animate-fade-in">
             <Button
               variant="ghost"
-              onClick={() => navigate("/acesso")}
+              onClick={async () => { await encerrarSessao(); navigate("/acesso", { replace: true }); }}
               className="text-white/60 hover:text-white hover:bg-white/10 mb-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
