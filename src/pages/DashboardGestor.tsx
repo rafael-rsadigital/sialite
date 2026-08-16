@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Shield, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, ArrowLeft, Building2, Mail, Phone } from "lucide-react";
+import { Shield, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, ArrowLeft, Building2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -18,8 +18,6 @@ interface Empresa {
   data_vencimento: string | null;
   valor_assinatura: number | null;
   link_asaas: string | null;
-  whatsapp_empresa: string | null;
-  email_empresa: string | null;
   gestor_id: string | null;
   created_at: string;
 }
@@ -124,11 +122,6 @@ export default function DashboardGestor() {
     return new Date(dataVencimento) < new Date();
   };
 
-  const gerarLinkWhatsApp = (valor: string) => {
-    const digits = valor.replace(/\D/g, "");
-    const numero = digits.startsWith("55") ? digits : `55${digits}`;
-    return `https://wa.me/${numero}`;
-  };
 
   // Métricas
   const assinaturasAtivas = empresas.filter(e => e.status_assinatura).length;
@@ -239,8 +232,6 @@ export default function DashboardGestor() {
                     <TableHeader>
                       <TableRow className="border-white/10 hover:bg-transparent">
                         <TableHead className="text-slate-400">Empresa</TableHead>
-                        <TableHead className="text-slate-400">WhatsApp</TableHead>
-                        <TableHead className="text-slate-400">E-mail</TableHead>
                         <TableHead className="text-slate-400">Slug</TableHead>
                         <TableHead className="text-slate-400">Status</TableHead>
                         <TableHead className="text-slate-400">Vencimento</TableHead>
@@ -266,34 +257,6 @@ export default function DashboardGestor() {
                           >
                             <TableCell className="text-white font-medium">
                               {empresa.nome_exibicao}
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap">
-                              {empresa.whatsapp_empresa ? (
-                                <a
-                                  href={gerarLinkWhatsApp(empresa.whatsapp_empresa)}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="inline-flex items-center gap-1.5 text-emerald-300 transition-colors hover:text-emerald-200"
-                                >
-                                  <Phone className="h-3.5 w-3.5" />
-                                  <span>{empresa.whatsapp_empresa}</span>
-                                </a>
-                              ) : (
-                                <span className="text-slate-500">—</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap">
-                              {empresa.email_empresa ? (
-                                <a
-                                  href={`mailto:${empresa.email_empresa}`}
-                                  className="inline-flex items-center gap-1.5 text-cyan-300 transition-colors hover:text-cyan-200"
-                                >
-                                  <Mail className="h-3.5 w-3.5" />
-                                  <span>{empresa.email_empresa}</span>
-                                </a>
-                              ) : (
-                                <span className="text-slate-500">—</span>
-                              )}
                             </TableCell>
                             <TableCell className="text-slate-400">
                               {empresa.slug}

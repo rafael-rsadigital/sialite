@@ -42,7 +42,8 @@ export default function Avaliacao() {
   const [copied, setCopied] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [nomeRetorno, setNomeRetorno] = useState("");
-  const [contatoRetorno, setContatoRetorno] = useState("");
+  const [telefoneRetorno, setTelefoneRetorno] = useState("");
+  const [emailRetorno, setEmailRetorno] = useState("");
 
   useEffect(() => {
     async function fetchEmpresa() {
@@ -72,13 +73,17 @@ export default function Avaliacao() {
     fetchEmpresa();
   }, [slug, isDemo, nomeFromQuery]);
 
-  const salvarFeedback = async (tipoEnvio: string, texto: string) => {
+  const salvarFeedback = async (tipoEnvio: string, texto: string, dadosRetorno?: { nomeCliente?: string; telefoneCliente?: string; emailCliente?: string }) => {
     if (isDemo || !slug) return true;
     const { error } = await supabase.rpc("registrar_feedback_publico", {
       p_slug: slug,
       p_nota: nota,
       p_comentario: texto,
       p_tipo_envio: tipoEnvio,
+      p_solicitou_retorno: Boolean(dadosRetorno),
+      p_nome_cliente: dadosRetorno?.nomeCliente || null,
+      p_telefone_cliente: dadosRetorno?.telefoneCliente || null,
+      p_email_cliente: dadosRetorno?.emailCliente || null,
     });
     if (error) {
       toast.error("Não foi possível registrar sua avaliação. Tente novamente.");
@@ -87,14 +92,25 @@ export default function Avaliacao() {
     return true;
   };
 
-  const montarFeedback = (incluirContato = false) => {
-    const partes = [comentario.trim()];
-    if (incluirContato && (nomeRetorno.trim() || contatoRetorno.trim())) {
-      const identificacao = [nomeRetorno.trim(), contatoRetorno.trim()].filter(Boolean).join(" · ");
-      partes.push(`Solicitação de retorno: ${identificacao}`);
+  const montarFeedback = () => comentario.trim() || "Feedback sem comentário";
+
+  const validarDadosRetorno = () => {
+    if (!nomeRetorno.trim()) {
+      toast.error("Informe seu nome para solicitar um retorno.");
+      return false;
     }
-    return partes.filter(Boolean).join("\n\n") || "Feedback sem comentário";
+    if (!telefoneRetorno.trim() && !emailRetorno.trim()) {
+      toast.error("Informe pelo menos um contato: celular ou e-mail.");
+      return false;
+    }
+    return true;
   };
+
+  const obterDadosRetorno = () => ({
+    nomeCliente: nomeRetorno.trim(),
+    telefoneCliente: telefoneRetorno.trim() || undefined,
+    emailCliente: emailRetorno.trim() || undefined,
+  });
 
   const handleRegistrar = () => {
     if (nota === 0) {
@@ -139,8 +155,9 @@ export default function Avaliacao() {
     if (!empresa?.whatsapp_empresa || enviando) return;
     setEnviando(true);
     try {
-      const texto = montarFeedback(true);
-      const salvo = await salvarFeedback("whatsapp", texto);
+      if (!validarDadosRetorno()) return;
+      const texto = montarFeedback();
+      const salvo = await salvarFeedback("whatsapp", texto, obterDadosRetorno());
       if (!salvo) return;
       const phone = empresa.whatsapp_empresa.replace(/\D/g, "");
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(texto)}`, "_blank");
@@ -153,8 +170,9 @@ export default function Avaliacao() {
     if (!empresa?.email_empresa || enviando) return;
     setEnviando(true);
     try {
-      const texto = montarFeedback(true);
-      const salvo = await salvarFeedback("email", texto);
+      if (!validarDadosRetorno()) return;
+      const texto = montarFeedback();
+      const salvo = await salvarFeedback("email", texto, obterDadosRetorno());
       if (!salvo) return;
       const subject = encodeURIComponent("Solicitação de retorno — avaliação");
       window.open(`mailto:${empresa.email_empresa}?subject=${subject}&body=${encodeURIComponent(texto)}`, "_blank");
@@ -165,10 +183,11 @@ export default function Avaliacao() {
 
   const handleFinalizar = async () => {
     if (enviando) return;
+    const solicitouRetorno = etapa === "retorno";
+    if (solicitouRetorno && !validarDadosRetorno()) return;
     setEnviando(true);
     try {
-      const solicitouRetorno = etapa === "retorno";
-      const salvo = await salvarFeedback(solicitouRetorno ? "direto" : "anonimo", montarFeedback(solicitouRetorno));
+      const salvo = await salvarFeedback(solicitouRetorno ? "direto" : "anonimo", montarFeedback(), solicitouRetorno ? obterDadosRetorno() : undefined);
       if (salvo) setSubmitted(true);
     } finally {
       setEnviando(false);
@@ -224,7 +243,7 @@ export default function Avaliacao() {
         <div className="mx-auto max-w-md animate-fade-in">
           <header className="mb-8 text-center"><img src={siaLogo} alt="SIA Lite" className="sia-logo-lockup mx-auto mb-3" /><div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center border border-[#b9c1c9] bg-[#ece9df] text-[#214d76]"><UserRound className="h-5 w-5" /></div><p className="eyebrow">Atendimento e acompanhamento</p><h1 className="display-title mt-3 text-3xl text-slate-800">Queremos ajudar.</h1><p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-slate-500">Deixe uma forma de contato se desejar receber um retorno sobre sua reclamação.</p></header>
           <section className="review-card border border-slate-100/80 p-7 sm:p-9">
-            <div className="space-y-5"><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="comentario-retorno">Seu relato</label><Textarea id="comentario-retorno" placeholder="Descreva o que podemos melhorar..." value={comentario} onChange={(e) => setComentario(e.target.value)} className="mt-2 min-h-[110px] resize-none rounded-lg border-slate-200 bg-slate-50 text-sm text-slate-700 placeholder:text-slate-400 focus:border-slate-300 focus:bg-white focus:ring-slate-100" /></div><div className="grid gap-4 sm:grid-cols-2"><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="nome-retorno">Nome <span className="font-normal normal-case tracking-normal">(opcional)</span></label><Input id="nome-retorno" value={nomeRetorno} onChange={(e) => setNomeRetorno(e.target.value)} placeholder="Como podemos chamar você?" className="legacy-field mt-2 px-3 text-sm" /></div><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="contato-retorno">Telefone ou e-mail</label><Input id="contato-retorno" value={contatoRetorno} onChange={(e) => setContatoRetorno(e.target.value)} placeholder="Seu melhor contato" className="legacy-field mt-2 px-3 text-sm" /></div></div></div>
+            <div className="space-y-5"><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="comentario-retorno">Seu relato</label><Textarea id="comentario-retorno" placeholder="Descreva o que podemos melhorar..." value={comentario} onChange={(e) => setComentario(e.target.value)} className="mt-2 min-h-[110px] resize-none rounded-lg border-slate-200 bg-slate-50 text-sm text-slate-700 placeholder:text-slate-400 focus:border-slate-300 focus:bg-white focus:ring-slate-100" /></div><div className="grid gap-4 sm:grid-cols-2"><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="nome-retorno">Nome</label><Input id="nome-retorno" value={nomeRetorno} onChange={(e) => setNomeRetorno(e.target.value)} placeholder="Como podemos chamar você?" className="legacy-field mt-2 px-3 text-sm" /></div><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="telefone-retorno">Celular</label><Input id="telefone-retorno" type="tel" value={telefoneRetorno} onChange={(e) => setTelefoneRetorno(e.target.value)} placeholder="(00) 00000-0000" className="legacy-field mt-2 px-3 text-sm" /></div><div className="sm:col-span-2"><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="email-retorno">E-mail</label><Input id="email-retorno" type="email" value={emailRetorno} onChange={(e) => setEmailRetorno(e.target.value)} placeholder="seu@email.com" className="legacy-field mt-2 px-3 text-sm" /><p className="mt-2 text-xs text-slate-500">Informe pelo menos um contato: celular ou e-mail.</p></div></div></div>
             {(empresa.whatsapp_empresa || empresa.email_empresa) && <div className="mt-8 border-t border-[#d6cebf] pt-6"><p className="text-center text-sm leading-6 text-[#5d6872]">Gostaria de uma solução imediata para o seu caso? Nos envie diretamente nos botões abaixo.</p><div className="mt-4 space-y-3">{empresa.whatsapp_empresa && <Button onClick={handleWhatsApp} disabled={enviando} variant="outline" className="h-12 w-full gap-3 border-[#bdb3a0] text-sm text-[#31495f] hover:bg-[#ece9df]">{enviando ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}{enviando ? "Aguarde..." : "Enviar via WhatsApp"}</Button>}{empresa.email_empresa && <Button onClick={handleEmail} disabled={enviando} variant="outline" className="h-12 w-full gap-3 border-[#bdb3a0] text-sm text-[#31495f] hover:bg-[#ece9df]">{enviando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}{enviando ? "Aguarde..." : "Enviar via e-mail"}</Button>}</div></div>}
             <div className="mt-7 border-t border-[#d6cebf] pt-6"><Button onClick={handleFinalizar} disabled={enviando} className="legacy-button h-12 w-full gap-2 text-sm font-bold" size="lg">{enviando ? <><Loader2 className="h-4 w-4 animate-spin" />Aguarde...</> : "Registrar e finalizar"}</Button><button onClick={() => setEtapa("coleta")} className="mt-4 flex w-full items-center justify-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-slate-700"><Pencil className="h-3.5 w-3.5" strokeWidth={1.5} />Alterar nota</button></div>
           </section>
