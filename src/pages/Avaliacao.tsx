@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Camera, CheckCircle2, Copy, ExternalLink, Mail, MessageCircle, PenLine, Pencil, Star, UserRound } from "lucide-react";
+import { ArrowLeft, Camera, CheckCircle2, Copy, ExternalLink, Loader2, Mail, MessageCircle, PenLine, Pencil, Star, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,6 +40,7 @@ export default function Avaliacao() {
   const [etapa, setEtapa] = useState<Etapa>("coleta");
   const [submitted, setSubmitted] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [enviando, setEnviando] = useState(false);
   const [nomeRetorno, setNomeRetorno] = useState("");
   const [contatoRetorno, setContatoRetorno] = useState("");
 
@@ -104,52 +105,74 @@ export default function Avaliacao() {
   };
 
   const handleCopyAndRedirect = async () => {
-    const texto = montarFeedback();
+    if (enviando || copied) return;
+    setEnviando(true);
     try {
-      await navigator.clipboard.writeText(texto);
-    } catch {
-      const textArea = document.createElement("textarea");
-      textArea.value = texto;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-999999px";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-    }
+      const texto = montarFeedback();
+      try {
+        await navigator.clipboard.writeText(texto);
+      } catch {
+        const textArea = document.createElement("textarea");
+        textArea.value = texto;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
 
-    const salvo = await salvarFeedback("google", texto);
-    if (!salvo) return;
-    setCopied(true);
-    toast.success("Comentário copiado!");
-    setTimeout(() => {
-      if (empresa?.link_google) window.open(empresa.link_google, "_blank");
-    }, 500);
+      const salvo = await salvarFeedback("google", texto);
+      if (!salvo) return;
+      setCopied(true);
+      toast.success("Comentário copiado!");
+      setTimeout(() => {
+        if (empresa?.link_google) window.open(empresa.link_google, "_blank");
+      }, 500);
+    } finally {
+      setEnviando(false);
+    }
   };
 
   const handleWhatsApp = async () => {
-    if (!empresa?.whatsapp_empresa) return;
-    const texto = montarFeedback(true);
-    const salvo = await salvarFeedback("whatsapp", texto);
-    if (!salvo) return;
-    const phone = empresa.whatsapp_empresa.replace(/\D/g, "");
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(texto)}`, "_blank");
+    if (!empresa?.whatsapp_empresa || enviando) return;
+    setEnviando(true);
+    try {
+      const texto = montarFeedback(true);
+      const salvo = await salvarFeedback("whatsapp", texto);
+      if (!salvo) return;
+      const phone = empresa.whatsapp_empresa.replace(/\D/g, "");
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(texto)}`, "_blank");
+    } finally {
+      setEnviando(false);
+    }
   };
 
   const handleEmail = async () => {
-    if (!empresa?.email_empresa) return;
-    const texto = montarFeedback(true);
-    const salvo = await salvarFeedback("email", texto);
-    if (!salvo) return;
-    const subject = encodeURIComponent("Solicitação de retorno — avaliação");
-    window.open(`mailto:${empresa.email_empresa}?subject=${subject}&body=${encodeURIComponent(texto)}`, "_blank");
+    if (!empresa?.email_empresa || enviando) return;
+    setEnviando(true);
+    try {
+      const texto = montarFeedback(true);
+      const salvo = await salvarFeedback("email", texto);
+      if (!salvo) return;
+      const subject = encodeURIComponent("Solicitação de retorno — avaliação");
+      window.open(`mailto:${empresa.email_empresa}?subject=${subject}&body=${encodeURIComponent(texto)}`, "_blank");
+    } finally {
+      setEnviando(false);
+    }
   };
 
   const handleFinalizar = async () => {
-    const solicitouRetorno = etapa === "retorno";
-    const salvo = await salvarFeedback(solicitouRetorno ? "direto" : "anonimo", montarFeedback(solicitouRetorno));
-    if (salvo) setSubmitted(true);
+    if (enviando) return;
+    setEnviando(true);
+    try {
+      const solicitouRetorno = etapa === "retorno";
+      const salvo = await salvarFeedback(solicitouRetorno ? "direto" : "anonimo", montarFeedback(solicitouRetorno));
+      if (salvo) setSubmitted(true);
+    } finally {
+      setEnviando(false);
+    }
   };
 
   const isPositive = nota >= 4;
@@ -202,8 +225,8 @@ export default function Avaliacao() {
           <header className="mb-8 text-center"><img src={siaLogo} alt="SIA Lite" className="sia-logo-lockup mx-auto mb-3" /><div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center border border-[#b9c1c9] bg-[#ece9df] text-[#214d76]"><UserRound className="h-5 w-5" /></div><p className="eyebrow">Atendimento e acompanhamento</p><h1 className="display-title mt-3 text-3xl text-slate-800">Queremos ajudar.</h1><p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-slate-500">Deixe uma forma de contato se desejar receber um retorno sobre sua reclamação.</p></header>
           <section className="review-card border border-slate-100/80 p-7 sm:p-9">
             <div className="space-y-5"><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="comentario-retorno">Seu relato</label><Textarea id="comentario-retorno" placeholder="Descreva o que podemos melhorar..." value={comentario} onChange={(e) => setComentario(e.target.value)} className="mt-2 min-h-[110px] resize-none rounded-lg border-slate-200 bg-slate-50 text-sm text-slate-700 placeholder:text-slate-400 focus:border-slate-300 focus:bg-white focus:ring-slate-100" /></div><div className="grid gap-4 sm:grid-cols-2"><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="nome-retorno">Nome <span className="font-normal normal-case tracking-normal">(opcional)</span></label><Input id="nome-retorno" value={nomeRetorno} onChange={(e) => setNomeRetorno(e.target.value)} placeholder="Como podemos chamar você?" className="legacy-field mt-2 px-3 text-sm" /></div><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="contato-retorno">Telefone ou e-mail</label><Input id="contato-retorno" value={contatoRetorno} onChange={(e) => setContatoRetorno(e.target.value)} placeholder="Seu melhor contato" className="legacy-field mt-2 px-3 text-sm" /></div></div></div>
-            {(empresa.whatsapp_empresa || empresa.email_empresa) && <div className="mt-8 border-t border-[#d6cebf] pt-6"><p className="text-center text-sm leading-6 text-[#5d6872]">Gostaria de uma solução imediata para o seu caso? Nos envie diretamente nos botões abaixo.</p><div className="mt-4 space-y-3">{empresa.whatsapp_empresa && <Button onClick={handleWhatsApp} variant="outline" className="h-12 w-full gap-3 border-[#bdb3a0] text-sm text-[#31495f] hover:bg-[#ece9df]"><MessageCircle className="h-4 w-4" />Enviar via WhatsApp</Button>}{empresa.email_empresa && <Button onClick={handleEmail} variant="outline" className="h-12 w-full gap-3 border-[#bdb3a0] text-sm text-[#31495f] hover:bg-[#ece9df]"><Mail className="h-4 w-4" />Enviar via e-mail</Button>}</div></div>}
-            <div className="mt-7 border-t border-[#d6cebf] pt-6"><Button onClick={handleFinalizar} className="legacy-button h-12 w-full text-sm font-bold" size="lg">Registrar e finalizar</Button><button onClick={() => setEtapa("coleta")} className="mt-4 flex w-full items-center justify-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-slate-700"><Pencil className="h-3.5 w-3.5" strokeWidth={1.5} />Alterar nota</button></div>
+            {(empresa.whatsapp_empresa || empresa.email_empresa) && <div className="mt-8 border-t border-[#d6cebf] pt-6"><p className="text-center text-sm leading-6 text-[#5d6872]">Gostaria de uma solução imediata para o seu caso? Nos envie diretamente nos botões abaixo.</p><div className="mt-4 space-y-3">{empresa.whatsapp_empresa && <Button onClick={handleWhatsApp} disabled={enviando} variant="outline" className="h-12 w-full gap-3 border-[#bdb3a0] text-sm text-[#31495f] hover:bg-[#ece9df]">{enviando ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}{enviando ? "Aguarde..." : "Enviar via WhatsApp"}</Button>}{empresa.email_empresa && <Button onClick={handleEmail} disabled={enviando} variant="outline" className="h-12 w-full gap-3 border-[#bdb3a0] text-sm text-[#31495f] hover:bg-[#ece9df]">{enviando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}{enviando ? "Aguarde..." : "Enviar via e-mail"}</Button>}</div></div>}
+            <div className="mt-7 border-t border-[#d6cebf] pt-6"><Button onClick={handleFinalizar} disabled={enviando} className="legacy-button h-12 w-full gap-2 text-sm font-bold" size="lg">{enviando ? <><Loader2 className="h-4 w-4 animate-spin" />Aguarde...</> : "Registrar e finalizar"}</Button><button onClick={() => setEtapa("coleta")} className="mt-4 flex w-full items-center justify-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-slate-700"><Pencil className="h-3.5 w-3.5" strokeWidth={1.5} />Alterar nota</button></div>
           </section>
           <p className="mt-7 text-center text-xs text-slate-400">Powered by SIA</p>
         </div>
@@ -224,7 +247,7 @@ export default function Avaliacao() {
             <div className="mt-7 text-left"><label className="text-[10px] font-bold uppercase tracking-[.14em] text-[#d4cbbb]" htmlFor="comentario-positivo">Seu comentário</label><Textarea id="comentario-positivo" placeholder="Adicione ou edite seu comentário..." value={comentario} onChange={(e) => setComentario(e.target.value)} className="positive-textarea mt-2 min-h-[96px] resize-none text-sm text-[#f9f3e7] placeholder:text-[#a9bed0] focus:ring-[#67bdec]/20" /></div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2"><div className="positive-tip"><Camera className="mx-auto h-4 w-4 text-[#efbf43]" /><p>Se puder, tire uma foto do produto ou do serviço realizado.</p></div><div className="positive-tip"><PenLine className="mx-auto h-4 w-4 text-[#efbf43]" /><p>Comente o que achou do atendimento e cite o nome do produto ou serviço.</p></div></div>
             {empresa.modelo_sugestao && <div className="positive-suggestion mt-4 p-4 text-left"><p className="text-[10px] font-bold uppercase tracking-[.13em] text-[#b8d7ea]">Sugestão de mensagem</p><p className="mt-2 text-sm leading-6 text-[#e0edf5]">“{empresa.modelo_sugestao}”</p></div>}
-            <Button onClick={handleCopyAndRedirect} className="positive-cta mt-6 h-12 w-full gap-2 text-sm font-bold" size="lg">{copied ? <><CheckCircle2 className="h-4 w-4" />Copiado — abrindo Google</> : <><Copy className="h-4 w-4" />Copiar e avaliar no Google <ExternalLink className="h-3.5 w-3.5 opacity-75" /></>}</Button>
+            <Button onClick={handleCopyAndRedirect} disabled={enviando || copied} className="positive-cta mt-6 h-12 w-full gap-2 text-sm font-bold" size="lg">{enviando ? <><Loader2 className="h-4 w-4 animate-spin" />Aguarde...</> : copied ? <><CheckCircle2 className="h-4 w-4" />Copiado — abrindo Google</> : <><Copy className="h-4 w-4" />Copiar e avaliar no Google <ExternalLink className="h-3.5 w-3.5 opacity-75" /></>}</Button>
             <button onClick={() => setEtapa("coleta")} className="positive-edit-link mt-5 flex w-full items-center justify-center gap-1.5 transition-colors"><Pencil className="h-3.5 w-3.5" strokeWidth={1.5} />Alterar nota</button>
             <p className="mt-7 text-[11px] text-[#aaa399]">SIA — Sistema Inteligente de Avaliações</p>
           </section>
