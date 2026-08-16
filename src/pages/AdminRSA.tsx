@@ -183,8 +183,9 @@ export default function AdminRSA() {
   }, []);
 
   useEffect(() => {
-    if (autenticado) fetchData();
+    if (autenticado) { fetchData(); carregarAcessos(); }
   }, [autenticado]);
+
 
   const fetchData = async () => {
     setLoading(true);
