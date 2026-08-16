@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Star, BarChart3, MessageSquare, TrendingUp, Lock, ArrowUpRight, Trash2 } from "lucide-react";
+import { Star, BarChart3, MessageSquare, TrendingUp, Lock, ArrowUpRight, Trash2, Mail, Phone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FeedbackCard } from "@/components/FeedbackCard";
@@ -9,7 +9,7 @@ import { obterPerfilAtual, type PapelSia } from "@/lib/auth";
 import { toast } from "sonner";
 
 interface Feedback { id: string; nota: number; comentario: string | null; tipo_envio: string; created_at: string; }
-interface Empresa { id: string; nome_exibicao: string; }
+interface Empresa { id: string; nome_exibicao: string; whatsapp_empresa: string | null; email_empresa: string | null; }
 
 export default function Dashboard() {
   const { hash } = useParams<{ hash?: string }>();
@@ -40,7 +40,7 @@ export default function Dashboard() {
         return;
       }
 
-      let empresaQuery = supabase.from("empresas").select("id, nome_exibicao");
+      let empresaQuery = supabase.from("empresas").select("id, nome_exibicao, whatsapp_empresa, email_empresa");
       if (hash) empresaQuery = empresaQuery.eq("hash_secreto", hash);
       else if (perfil.empresa_id) empresaQuery = empresaQuery.eq("id", perfil.empresa_id);
       else {
@@ -85,6 +85,12 @@ export default function Dashboard() {
     setDeletingId(null);
   };
 
+  const gerarLinkWhatsApp = (valor: string) => {
+    const digits = valor.replace(/\D/g, "");
+    const numero = digits.startsWith("55") ? digits : `55${digits}`;
+    return `https://wa.me/${numero}`;
+  };
+
   const mediaNotas = feedbacks.length > 0 ? (feedbacks.reduce((acc, f) => acc + f.nota, 0) / feedbacks.length).toFixed(1) : "0.0";
   const totalAvaliacoes = feedbacks.length;
   const avaliacoesPositivas = feedbacks.filter((f) => f.nota >= 4).length;
@@ -115,6 +121,18 @@ export default function Dashboard() {
       <div className="mx-auto max-w-5xl px-5 py-10 lg:px-8 lg:py-12">
         <div className="flex items-end justify-between gap-5 border-b border-[#526170] pb-7"><div><p className="eyebrow text-[#d6a66a]">Relatório de reputação</p><h1 className="display-title mt-3 text-3xl text-[#f5f0e5] sm:text-4xl">Suas avaliações</h1><p className="mt-3 text-sm text-[#b7c0c5]">Acompanhe o que seus clientes estão dizendo.</p></div><span className="hidden text-xs font-bold tracking-[.12em] text-[#aeb8c0] sm:block">ACESSO AUTENTICADO</span></div>
         <div className="mt-7 grid overflow-hidden border border-[#526170] bg-[#526170] sm:grid-cols-3">{metrics.map((metric) => <section key={metric.label} className="legacy-card-dark p-5 shadow-none"><div className="flex items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#aeb8c0]">{metric.label}</span><metric.icon className={`h-4 w-4 ${metric.iconClass}`} /></div><div className="mt-5 flex items-baseline gap-2"><span className="text-3xl font-semibold tracking-tight text-[#f5f0e5]">{metric.value}</span><span className="text-xs text-[#aeb8c0]">{metric.suffix}</span></div></section>)}</div>
+        <section className="mt-7 grid gap-4 sm:grid-cols-2">
+          <Card className="portal-panel shadow-none"><CardContent className="p-5">
+            <p className="eyebrow text-[#d6a66a]">Contato comercial</p>
+            <p className="mt-2 text-xs uppercase tracking-[.14em] text-[#aeb8c0]">WhatsApp</p>
+            {empresa.whatsapp_empresa ? <a href={gerarLinkWhatsApp(empresa.whatsapp_empresa)} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-2 text-sm text-emerald-300 transition-colors hover:text-emerald-200"><Phone className="h-4 w-4" />{empresa.whatsapp_empresa}</a> : <p className="mt-2 text-sm text-[#7f8b95]">Não informado</p>}
+          </CardContent></Card>
+          <Card className="portal-panel shadow-none"><CardContent className="p-5">
+            <p className="eyebrow text-[#d6a66a]">Contato digital</p>
+            <p className="mt-2 text-xs uppercase tracking-[.14em] text-[#aeb8c0]">E-mail</p>
+            {empresa.email_empresa ? <a href={`mailto:${empresa.email_empresa}`} className="mt-2 inline-flex items-center gap-2 break-all text-sm text-cyan-300 transition-colors hover:text-cyan-200"><Mail className="h-4 w-4 shrink-0" />{empresa.email_empresa}</a> : <p className="mt-2 text-sm text-[#7f8b95]">Não informado</p>}
+          </CardContent></Card>
+        </section>
         <section className="mt-10"><div className="mb-5 flex items-end justify-between border-b border-[#526170] pb-4"><div><p className="eyebrow text-[#d6a66a]">Registros recentes</p><h2 className="mt-2 text-xl font-bold text-[#f5f0e5]">Últimas avaliações</h2><p className="mt-1 text-xs text-[#aeb8c0]">Mais recentes primeiro</p></div><ArrowUpRight className="h-5 w-5 text-[#d6a66a]" /></div>{feedbacks.length === 0 ? <Card className="portal-panel shadow-none"><CardContent className="p-10 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center border border-[#526170] bg-white/5 text-[#d6a66a]"><MessageSquare className="h-5 w-5" /></div><p className="mt-4 text-sm text-[#d4dadd]">Nenhuma avaliação recebida ainda.</p><p className="mt-1 text-xs text-[#aeb8c0]">Quando houver uma nova avaliação, ela aparecerá aqui.</p></CardContent></Card> : <div className="space-y-3">{feedbacks.map((feedback) => <div key={feedback.id} className="relative"><FeedbackCard nota={feedback.nota} comentario={feedback.comentario} tipo_envio={feedback.tipo_envio} created_at={feedback.created_at} />{papel === "administrador" && <Button type="button" variant="ghost" size="sm" disabled={deletingId === feedback.id} onClick={() => excluirFeedback(feedback)} className="absolute right-3 top-3 h-8 text-[#dc8a8a] hover:bg-[#612d2d] hover:text-white"><Trash2 className="mr-1 h-3.5 w-3.5" />{deletingId === feedback.id ? "Excluindo" : "Excluir"}</Button>}</div>)}</div>}</section>
         <footer className="mt-12 border-t border-[#526170] pt-6 text-center text-xs text-[#aeb8c0]">SIA — Sistema Inteligente de Avaliações</footer>
       </div>
