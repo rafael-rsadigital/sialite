@@ -77,6 +77,49 @@ export default function AdminRSA() {
   const [savingEmpresa, setSavingEmpresa] = useState(false);
   const [editingEmpresaId, setEditingEmpresaId] = useState<string | null>(null);
 
+  // Acessos (logins)
+  const [acessos, setAcessos] = useState<Acesso[]>([]);
+  const [loadingAcessos, setLoadingAcessos] = useState(false);
+  const [savingAcesso, setSavingAcesso] = useState(false);
+  const [acessoForm, setAcessoForm] = useState({ email: "", senha: "", nome_exibicao: "", papel: "empresa", empresa_id: "", gestor_id: "" });
+
+  const carregarAcessos = async () => {
+    setLoadingAcessos(true);
+    const { data, error } = await supabase.functions.invoke("gerenciar-acessos", { body: { acao: "listar" } });
+    if (error || data?.error) toast.error(data?.error || "Erro ao carregar acessos");
+    else setAcessos(data.acessos || []);
+    setLoadingAcessos(false);
+  };
+
+  const handleSalvarAcesso = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingAcesso(true);
+    const { data, error } = await supabase.functions.invoke("gerenciar-acessos", {
+      body: { acao: "criar", ...acessoForm },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || "Erro ao salvar acesso");
+    } else {
+      toast.success(data.criado ? "Acesso criado com sucesso!" : "Acesso atualizado com sucesso!");
+      setAcessoForm({ email: "", senha: "", nome_exibicao: "", papel: "empresa", empresa_id: "", gestor_id: "" });
+      carregarAcessos();
+    }
+    setSavingAcesso(false);
+  };
+
+  const removerAcesso = async (perfilId: string) => {
+    const { data, error } = await supabase.functions.invoke("gerenciar-acessos", { body: { acao: "remover", perfil_id: perfilId } });
+    if (error || data?.error) toast.error(data?.error || "Erro ao remover acesso");
+    else { toast.success("Acesso removido"); setAcessos((a) => a.filter((x) => x.id !== perfilId)); }
+  };
+
+  const abrirAcessoDaEmpresa = (empresa: Empresa) => {
+    setAcessoForm({ email: empresa.email_empresa || "", senha: "", nome_exibicao: empresa.nome_exibicao, papel: "empresa", empresa_id: empresa.id, gestor_id: "" });
+    setActiveTab("acessos");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+
   const limparFormularioEmpresa = () => {
     setEditingEmpresaId(null);
     setEmpresaForm({ nome_exibicao: "", slug: "", hash_secreto: "", link_google: "", link_asaas: "", valor_assinatura: "", data_vencimento: "", gestor_id: "", whatsapp_empresa: "", email_empresa: "", modelo_sugestao: "", plano_assinatura: "essencial", ciclo_cobranca: "mensal", status_cobranca: "ativo", periodo_teste_ate: "" });
