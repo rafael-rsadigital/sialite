@@ -42,6 +42,16 @@ interface Gestor {
   created_at: string;
 }
 
+interface Acesso {
+  id: string;
+  papel: string;
+  empresa_id: string | null;
+  gestor_id: string | null;
+  nome_exibicao: string | null;
+  email: string | null;
+}
+
+
 export default function AdminRSA() {
   const [autenticado, setAutenticado] = useState(false);
   const [email, setEmail] = useState("");
