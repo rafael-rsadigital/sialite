@@ -541,7 +541,7 @@ export default function AdminRSA() {
                                     <Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => window.open(empresa.link_asaas!, '_blank')}><ExternalLink className="w-4 h-4 mr-1" />Abrir</Button>
                                   ) : <span className="text-slate-500 text-sm">—</span>}
                                 </TableCell>
-                                <TableCell className="text-right"><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => iniciarEdicaoEmpresa(empresa)}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button></TableCell>
+                                <TableCell className="text-right"><div className="flex justify-end gap-2"><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => iniciarEdicaoEmpresa(empresa)}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => abrirAcessoDaEmpresa(empresa)}><KeyRound className="mr-1 h-3.5 w-3.5" />Acesso</Button></div></TableCell>
                               </TableRow>
                             );
                           })}
