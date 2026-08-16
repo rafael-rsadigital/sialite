@@ -410,7 +410,12 @@ export default function AdminRSA() {
                 <Building2 className="w-4 h-4 mr-2" />
                 Cadastro Empresas
               </TabsTrigger>
+              <TabsTrigger value="acessos" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
+                <KeyRound className="w-4 h-4 mr-2" />
+                Acessos
+              </TabsTrigger>
             </TabsList>
+
 
             {/* Dashboard Tab */}
             <TabsContent value="dashboard" className="space-y-6">
