@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Lock, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, Zap, Building2, UserPlus, LayoutDashboard, Save, Trash2, Pencil, LogOut, Mail } from "lucide-react";
+import { Shield, Lock, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, Zap, Building2, UserPlus, LayoutDashboard, Save, Trash2, Pencil, LogOut, Mail, KeyRound } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
