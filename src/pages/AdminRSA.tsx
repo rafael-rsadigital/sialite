@@ -332,53 +332,16 @@ export default function AdminRSA() {
     return gestor?.nome || "—";
   };
 
-  if (!autenticado) {
+  if (verificandoSessao) {
     return (
-      <div className="ink-shell flex items-center justify-center relative overflow-hidden p-4">
-
-        <Card className="relative bg-white/5 backdrop-blur-xl border-white/10 shadow-2xl shadow-black/20 max-w-md w-full animate-fade-in">
-          <CardContent className="p-8">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25 mb-6">
-              <Lock className="w-8 h-8 text-white" />
-            </div>
-
-            <h1 className="text-2xl font-bold text-white mb-2">Painel RSA Digital</h1>
-            <p className="text-slate-400 mb-8">Entre com a conta administrativa cadastrada no Supabase</p>
-
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="relative"><Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" /><Input
-                type="email"
-                autoComplete="email"
-                placeholder="administrador@empresa.com"
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); setErroSenha(""); }}
-                className="bg-white/5 border-white/10 pl-10 text-white placeholder:text-slate-500 h-12 focus:border-violet-500/50 focus:ring-violet-500/20"
-              /></div>
-              <Input
-                type="password"
-                autoComplete="current-password"
-                placeholder="Senha"
-                value={senha}
-                onChange={(e) => { setSenha(e.target.value); setErroSenha(""); }}
-                className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 h-12 focus:border-violet-500/50 focus:ring-violet-500/20"
-              />
-
-              {erroSenha && (
-                <p className="text-red-400 text-sm flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  {erroSenha}
-                </p>
-              )}
-
-              <Button type="submit" className="w-full h-12 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-medium shadow-lg shadow-violet-500/25">
-                <Shield className="w-5 h-5 mr-2" />
-                Acessar Painel
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+      <div className="ink-shell flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-violet-400" />
       </div>
     );
+  }
+
+  if (!autenticado) {
+    return <Navigate to="/acesso" replace />;
   }
 
   return (
