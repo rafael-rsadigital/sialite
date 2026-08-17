@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Camera, CheckCircle2, Copy, ExternalLink, Loader2, Mail, MessageCircle, PenLine, Pencil, Star, UserRound } from "lucide-react";
+import { CheckCircle2, Copy, ExternalLink, Loader2, Mail, MessageCircle, Pencil, Star, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
