@@ -19,6 +19,7 @@ interface Feedback {
   nome_cliente: string | null;
   telefone_cliente: string | null;
   email_cliente: string | null;
+  produto_servico: string | null;
 }
 interface Empresa { id: string; nome_exibicao: string; }
 
@@ -73,7 +74,7 @@ export default function Dashboard() {
       setEmpresa(empresaData);
       const { data: feedbacksData, error: feedbacksError } = await supabase
         .from("feedbacks")
-        .select("id, nota, comentario, tipo_envio, created_at, solicitou_retorno, solucionado, nome_cliente, telefone_cliente, email_cliente")
+        .select("id, nota, comentario, tipo_envio, created_at, solicitou_retorno, solucionado, nome_cliente, telefone_cliente, email_cliente, produto_servico")
         .eq("empresa_id", empresaData.id)
         .order("created_at", { ascending: false });
 
@@ -171,6 +172,7 @@ export default function Dashboard() {
                   tipo_envio={feedback.tipo_envio}
                   created_at={feedback.created_at}
                   nomeCliente={feedback.nome_cliente}
+                  produtoServico={feedback.produto_servico}
                   telefoneCliente={feedback.telefone_cliente}
                   emailCliente={feedback.email_cliente}
                   solicitouRetorno={feedback.solicitou_retorno}
