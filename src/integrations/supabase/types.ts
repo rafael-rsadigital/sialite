@@ -97,6 +97,7 @@ export type Database = {
           id: string
           nome_cliente: string | null
           nota: number
+          produto_servico: string | null
           solicitou_retorno: boolean
           solucionado: boolean
           telefone_cliente: string | null
@@ -110,6 +111,7 @@ export type Database = {
           id?: string
           nome_cliente?: string | null
           nota: number
+          produto_servico?: string | null
           solicitou_retorno?: boolean
           solucionado?: boolean
           telefone_cliente?: string | null
@@ -123,6 +125,7 @@ export type Database = {
           id?: string
           nome_cliente?: string | null
           nota?: number
+          produto_servico?: string | null
           solicitou_retorno?: boolean
           solucionado?: boolean
           telefone_cliente?: string | null
@@ -278,32 +281,41 @@ export type Database = {
       }
       eh_administrador: { Args: never; Returns: boolean }
       empresa_atual_id: { Args: never; Returns: string }
-      excluir_empresa: {
-        Args: { p_empresa_id: string }
-        Returns: undefined
-      }
-      excluir_gestor: {
-        Args: { p_gestor_id: string }
-        Returns: undefined
-      }
+      excluir_empresa: { Args: { p_empresa_id: string }; Returns: undefined }
+      excluir_gestor: { Args: { p_gestor_id: string }; Returns: undefined }
       gestor_atual_id: { Args: never; Returns: string }
       papel_atual: {
         Args: never
         Returns: Database["public"]["Enums"]["papel_sia"]
       }
-      registrar_feedback_publico: {
-        Args: {
-          p_comentario?: string
-          p_email_cliente?: string
-          p_nome_cliente?: string
-          p_nota: number
-          p_slug: string
-          p_solicitou_retorno?: boolean
-          p_telefone_cliente?: string
-          p_tipo_envio?: string
-        }
-        Returns: string
-      }
+      registrar_feedback_publico:
+        | {
+            Args: {
+              p_comentario?: string
+              p_email_cliente?: string
+              p_nome_cliente?: string
+              p_nota: number
+              p_slug: string
+              p_solicitou_retorno?: boolean
+              p_telefone_cliente?: string
+              p_tipo_envio?: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_comentario?: string
+              p_email_cliente?: string
+              p_nome_cliente?: string
+              p_nota: number
+              p_produto_servico?: string
+              p_slug: string
+              p_solicitou_retorno?: boolean
+              p_telefone_cliente?: string
+              p_tipo_envio?: string
+            }
+            Returns: string
+          }
     }
     Enums: {
       papel_sia: "administrador" | "gestor" | "empresa"
