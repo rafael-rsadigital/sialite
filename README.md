@@ -1,73 +1,55 @@
-# Welcome to your Lovable project
+# SIA Lite
 
-## Project info
+Sistema de pesquisa de satisfação multiempresa (SaaS), com painéis para administrador, gestores (parceiros) e empresas.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Stack: Vite + React + TypeScript + shadcn/ui + Tailwind CSS + Supabase (Postgres + Auth).
 
-## How can I edit this code?
+## Como rodar localmente
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Pré-requisito: Node.js 18+ instalado ([nvm](https://github.com/nvm-sh/nvm#installing-and-updating) é uma boa forma de instalar).
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 1. Clone o repositório
+git clone https://github.com/rafael-rsadigital/sialite.git
+cd sialite
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Instale as dependências
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
+# 3. Configure as variáveis de ambiente
+cp .env.example .env
+# edite o .env com os dados do SEU projeto Supabase (veja SUPABASE_SETUP.md)
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 4. Rode o servidor de desenvolvimento
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Configurar o Supabase (obrigatório)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Este projeto depende de um banco Supabase próprio. Siga o passo a passo em [`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md) para:
 
-**Use GitHub Codespaces**
+- criar seu projeto no Supabase,
+- aplicar as migrations na ordem correta,
+- criar o primeiro usuário administrador,
+- configurar as variáveis de ambiente.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Build para produção
 
-## What technologies are used for this project?
+```sh
+npm run build
+```
 
-This project is built with:
+Os arquivos ficam em `dist/`. O `vercel.json` já está configurado para deploy na Vercel (rewrites de SPA), mas o build gerado é estático e pode ser hospedado em qualquer serviço (Netlify, Cloudflare Pages, servidor próprio, etc.).
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Testes
 
-## How can I deploy this project?
+```sh
+npm run test        # roda uma vez
+npm run test:watch  # modo watch
+```
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## Estrutura
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- `src/pages` — rotas da aplicação (Index, Avaliacao, Acesso, Dashboard, DashboardGestor, AdminRSA)
+- `src/integrations/supabase` — cliente Supabase e tipos gerados do banco
+- `supabase/migrations` — histórico de migrations SQL do banco (execute em ordem)
