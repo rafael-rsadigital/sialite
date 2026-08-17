@@ -37,6 +37,8 @@ export default function Avaliacao() {
   const [loading, setLoading] = useState(true);
   const [nota, setNota] = useState(0);
   const [comentario, setComentario] = useState("");
+  const [nomeCliente, setNomeCliente] = useState("");
+  const [produtoServico, setProdutoServico] = useState("");
   const [etapa, setEtapa] = useState<Etapa>("coleta");
   const [submitted, setSubmitted] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -81,10 +83,11 @@ export default function Avaliacao() {
       p_comentario: texto,
       p_tipo_envio: tipoEnvio,
       p_solicitou_retorno: Boolean(dadosRetorno),
-      p_nome_cliente: dadosRetorno?.nomeCliente || null,
+      p_nome_cliente: dadosRetorno?.nomeCliente || nomeCliente.trim() || null,
       p_telefone_cliente: dadosRetorno?.telefoneCliente || null,
       p_email_cliente: dadosRetorno?.emailCliente || null,
-    });
+      p_produto_servico: produtoServico.trim() || null,
+    } as never);
     if (error) {
       toast.error("Não foi possível registrar sua avaliação. Tente novamente.");
       return false;
@@ -95,7 +98,7 @@ export default function Avaliacao() {
   const montarFeedback = () => comentario.trim() || "Feedback sem comentário";
 
   const validarDadosRetorno = () => {
-    if (!nomeRetorno.trim()) {
+    if (!nomeRetorno.trim() && !nomeCliente.trim()) {
       toast.error("Informe seu nome para solicitar um retorno.");
       return false;
     }
@@ -107,7 +110,7 @@ export default function Avaliacao() {
   };
 
   const obterDadosRetorno = () => ({
-    nomeCliente: nomeRetorno.trim(),
+    nomeCliente: nomeRetorno.trim() || nomeCliente.trim(),
     telefoneCliente: telefoneRetorno.trim() || undefined,
     emailCliente: emailRetorno.trim() || undefined,
   });
@@ -117,6 +120,7 @@ export default function Avaliacao() {
       toast.error("Por favor, selecione uma nota");
       return;
     }
+    if (!nomeRetorno.trim()) setNomeRetorno(nomeCliente.trim());
     setEtapa("desfecho");
   };
 
