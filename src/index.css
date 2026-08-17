@@ -142,8 +142,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.4rem;
-    height: 2.4rem;
+    width: 3.12rem;
+    height: 3.12rem;
     border: 1px solid #173b61;
     color: #f5f0e5;
     background: #214d76;
@@ -724,8 +724,8 @@ button,
 }
 
 .sia-logo-lockup {
-  width: 5rem;
-  height: 5rem;
+  width: 6.5rem;
+  height: 6.5rem;
   object-fit: contain;
   mix-blend-mode: screen;
   filter: brightness(.92) contrast(2.8) saturate(1.25);

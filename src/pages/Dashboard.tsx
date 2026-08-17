@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Star, BarChart3, MessageSquare, TrendingUp, Lock, ArrowUpRight, Trash2 } from "lucide-react";
+import { Star, BarChart3, MessageSquare, TrendingUp, Lock, ArrowUpRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FeedbackCard } from "@/components/FeedbackCard";
@@ -113,12 +113,6 @@ export default function Dashboard() {
     setUpdatingSolucaoId(null);
   };
 
-  const gerarLinkWhatsApp = (valor: string) => {
-    const digits = valor.replace(/\D/g, "");
-    const numero = digits.startsWith("55") ? digits : `55${digits}`;
-    return `https://wa.me/${numero}`;
-  };
-
   const mediaNotas = feedbacks.length > 0 ? (feedbacks.reduce((acc, f) => acc + f.nota, 0) / feedbacks.length).toFixed(1) : "0.0";
   const totalAvaliacoes = feedbacks.length;
   const avaliacoesPositivas = feedbacks.filter((f) => f.nota >= 4).length;
@@ -170,60 +164,22 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-3">
               {feedbacks.map((feedback) => (
-                <div key={feedback.id} className="relative">
-                  <FeedbackCard nota={feedback.nota} comentario={feedback.comentario} tipo_envio={feedback.tipo_envio} created_at={feedback.created_at} />
-
-                  {/* Solicitação de retorno: sempre visível quando aplicável, com status de solução */}
-                  {feedback.solicitou_retorno ? (
-                    <div className={`mt-2 border p-4 transition-colors ${feedback.solucionado ? "border-emerald-500/25 bg-emerald-500/[0.04]" : "border-amber-500/30 bg-amber-500/[0.06]"}`}>
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <span className={`rounded-md border px-2.5 py-1 text-[11px] font-medium ${feedback.solucionado ? "border-emerald-400/25 bg-emerald-400/[0.08] text-emerald-300" : "border-amber-400/25 bg-amber-400/[0.08] text-amber-300"}`}>
-                          Solicitou retorno
-                        </span>
-                        <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-[#d4dadd]">
-                          <input
-                            type="checkbox"
-                            checked={!!feedback.solucionado}
-                            disabled={updatingSolucaoId === feedback.id}
-                            onChange={(e) => alternarSolucionado(feedback, e.target.checked)}
-                            className="h-4 w-4 accent-emerald-500"
-                          />
-                          Solucionado
-                        </label>
-                      </div>
-
-                      <div className="mt-3 grid gap-px border border-[#526170] bg-[#526170] sm:grid-cols-3">
-                        <div className="legacy-card-dark p-4">
-                          <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#aeb8c0]">Cliente</p>
-                          <p className="mt-2 text-sm text-[#f5f0e5]">{feedback.nome_cliente || "Não informado"}</p>
-                        </div>
-                        <div className="legacy-card-dark p-4">
-                          <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#aeb8c0]">Celular / WhatsApp</p>
-                          {feedback.telefone_cliente ? (
-                            <a href={gerarLinkWhatsApp(feedback.telefone_cliente)} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-emerald-300 transition-colors hover:text-emerald-200">{feedback.telefone_cliente}</a>
-                          ) : (
-                            <p className="mt-2 text-sm text-[#7f8b95]">Não informado</p>
-                          )}
-                        </div>
-                        <div className="legacy-card-dark p-4">
-                          <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#aeb8c0]">E-mail</p>
-                          {feedback.email_cliente ? (
-                            <a href={`mailto:${feedback.email_cliente}`} className="mt-2 block break-all text-sm text-cyan-300 transition-colors hover:text-cyan-200">{feedback.email_cliente}</a>
-                          ) : (
-                            <p className="mt-2 text-sm text-[#7f8b95]">Não informado</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {papel === "administrador" && (
-                    <Button type="button" variant="ghost" size="sm" disabled={deletingId === feedback.id} onClick={() => excluirFeedback(feedback)} className="absolute right-3 top-3 h-8 text-[#dc8a8a] hover:bg-[#612d2d] hover:text-white">
-                      <Trash2 className="mr-1 h-3.5 w-3.5" />
-                      {deletingId === feedback.id ? "Excluindo" : "Excluir"}
-                    </Button>
-                  )}
-                </div>
+                <FeedbackCard
+                  key={feedback.id}
+                  nota={feedback.nota}
+                  comentario={feedback.comentario}
+                  tipo_envio={feedback.tipo_envio}
+                  created_at={feedback.created_at}
+                  nomeCliente={feedback.nome_cliente}
+                  telefoneCliente={feedback.telefone_cliente}
+                  emailCliente={feedback.email_cliente}
+                  solicitouRetorno={feedback.solicitou_retorno}
+                  solucionado={feedback.solucionado}
+                  onToggleSolucionado={(valor) => alternarSolucionado(feedback, valor)}
+                  atualizandoSolucao={updatingSolucaoId === feedback.id}
+                  onExcluir={papel === "administrador" ? () => excluirFeedback(feedback) : undefined}
+                  excluindo={deletingId === feedback.id}
+                />
               ))}
             </div>
           )}
