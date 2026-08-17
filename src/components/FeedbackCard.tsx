@@ -10,6 +10,7 @@ interface FeedbackCardProps {
   tipo_envio: string;
   created_at: string;
   nomeCliente?: string | null;
+  produtoServico?: string | null;
   telefoneCliente?: string | null;
   emailCliente?: string | null;
   solicitouRetorno?: boolean | null;
