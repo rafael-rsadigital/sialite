@@ -65,6 +65,9 @@ export function FeedbackCard({
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-200">{nomeCliente?.trim() || "Cliente anônimo"}</p>
+                {produtoServico?.trim() ? (
+                  <p className="mt-0.5 text-xs text-slate-500">{produtoServico.trim()}</p>
+                ) : null}
                 <div className="mt-1 flex items-center gap-1" aria-label={`${nota} de 5 estrelas`}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star key={star} className={cn("h-3.5 w-3.5", star <= nota ? "fill-amber-400 text-amber-400" : "text-slate-700")} />
