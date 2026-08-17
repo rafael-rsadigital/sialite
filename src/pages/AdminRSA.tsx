@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Shield, Lock, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, Zap, Building2, UserPlus, LayoutDashboard, Save, Trash2, Pencil, LogOut, Mail, KeyRound } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Shield, Lock, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, Zap, Building2, UserPlus, LayoutDashboard, Save, Trash2, Pencil, LogOut, Mail, KeyRound, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -564,10 +565,10 @@ export default function AdminRSA() {
                                 </TableCell>
                                 <TableCell>
                                   {empresa.link_asaas ? (
-                                    <Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => window.open(empresa.link_asaas!, '_blank')}><ExternalLink className="w-4 h-4 mr-1" />Abrir</Button>
+                                    <Button size="sm" variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10" onClick={() => window.open(empresa.link_asaas!, '_blank')}><ExternalLink className="w-4 h-4 mr-1" />Abrir</Button>
                                   ) : <span className="text-slate-500 text-sm">—</span>}
                                 </TableCell>
-                                <TableCell className="text-right"><div className="flex justify-end gap-2"><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => iniciarEdicaoEmpresa(empresa)}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => abrirAcessoDaEmpresa(empresa)}><KeyRound className="mr-1 h-3.5 w-3.5" />Acesso</Button><Button size="sm" variant="outline" className="border-red-500/30 text-red-300 hover:bg-red-500/10 hover:text-red-200" onClick={() => deleteEmpresa(empresa.id, empresa.nome_exibicao)}><Trash2 className="mr-1 h-3.5 w-3.5" />Excluir</Button></div></TableCell>
+                                <TableCell className="text-right"><div className="flex justify-end gap-2"><Button size="sm" variant="outline" className="bg-white/5 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 hover:text-cyan-200" asChild><Link to={`/dashboard/${empresa.hash_secreto}`}><BarChart3 className="mr-1 h-3.5 w-3.5" />Dashboard</Link></Button><Button size="sm" variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10" onClick={() => iniciarEdicaoEmpresa(empresa)}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button><Button size="sm" variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10" onClick={() => abrirAcessoDaEmpresa(empresa)}><KeyRound className="mr-1 h-3.5 w-3.5" />Acesso</Button><Button size="sm" variant="outline" className="bg-white/5 border-red-500/30 text-red-300 hover:bg-red-500/10 hover:text-red-200" onClick={() => deleteEmpresa(empresa.id, empresa.nome_exibicao)}><Trash2 className="mr-1 h-3.5 w-3.5" />Excluir</Button></div></TableCell>
                               </TableRow>
                             );
                           })}
@@ -942,7 +943,7 @@ export default function AdminRSA() {
                                   : "Administrador"}
                               </p>
                             </div>
-                            <Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => removerAcesso(a.id)}><Trash2 className="w-4 h-4" /></Button>
+                            <Button size="sm" variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10" onClick={() => removerAcesso(a.id)}><Trash2 className="w-4 h-4" /></Button>
                           </div>
                         ))}
                       </div>

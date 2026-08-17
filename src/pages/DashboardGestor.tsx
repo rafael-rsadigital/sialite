@@ -288,7 +288,7 @@ export default function DashboardGestor() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="border-white/10 text-white hover:bg-white/10"
+                                  className="bg-white/5 border-white/10 text-white hover:bg-white/10"
                                   onClick={() => window.open(empresa.link_asaas!, '_blank')}
                                 >
                                   <ExternalLink className="w-4 h-4 mr-1" />
@@ -303,7 +303,7 @@ export default function DashboardGestor() {
                                 asChild
                                 size="sm"
                                 variant="outline"
-                                className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 hover:text-cyan-200"
+                                className="bg-white/5 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 hover:text-cyan-200"
                               >
                                 <Link to={`/dashboard/${empresa.hash_secreto}`}>
                                   <BarChart3 className="w-4 h-4 mr-1" />
