@@ -15,6 +15,7 @@ interface Feedback {
   tipo_envio: string;
   created_at: string;
   solicitou_retorno: boolean | null;
+  solucionado: boolean | null;
   nome_cliente: string | null;
   telefone_cliente: string | null;
   email_cliente: string | null;
@@ -41,7 +42,10 @@ export default function Dashboard() {
       }
       setPapel(perfil.papel);
 
-      if (perfil.papel === "gestor") {
+      if (perfil.papel === "gestor" && !hash) {
+        // Sem hash de uma empresa específica: manda para o painel de gestão.
+        // Com hash, deixa seguir — o gestor pode abrir o dashboard de uma
+        // empresa sob sua gestão (a RLS já garante que só vê as suas).
         navigate(`/dashboard-gestor/${perfil.gestor_id}`, { replace: true });
         return;
       }
@@ -69,7 +73,7 @@ export default function Dashboard() {
       setEmpresa(empresaData);
       const { data: feedbacksData, error: feedbacksError } = await supabase
         .from("feedbacks")
-        .select("id, nota, comentario, tipo_envio, created_at, solicitou_retorno, nome_cliente, telefone_cliente, email_cliente")
+        .select("id, nota, comentario, tipo_envio, created_at, solicitou_retorno, solucionado, nome_cliente, telefone_cliente, email_cliente")
         .eq("empresa_id", empresaData.id)
         .order("created_at", { ascending: false });
 
@@ -93,6 +97,20 @@ export default function Dashboard() {
       toast.success("Avaliação excluída definitivamente");
     }
     setDeletingId(null);
+  };
+
+  const [updatingSolucaoId, setUpdatingSolucaoId] = useState<string | null>(null);
+
+  const alternarSolucionado = async (feedback: Feedback, valor: boolean) => {
+    setUpdatingSolucaoId(feedback.id);
+    const { error } = await supabase.from("feedbacks").update({ solucionado: valor }).eq("id", feedback.id);
+    if (error) {
+      toast.error("Não foi possível atualizar o status");
+    } else {
+      setFeedbacks((atual) => atual.map((item) => item.id === feedback.id ? { ...item, solucionado: valor } : item));
+      toast.success(valor ? "Marcado como solucionado" : "Marcado como pendente");
+    }
+    setUpdatingSolucaoId(null);
   };
 
   const gerarLinkWhatsApp = (valor: string) => {
@@ -127,12 +145,89 @@ export default function Dashboard() {
 
   return (
     <main className="ink-shell">
-      <header className="border-b border-[#526170] bg-[#101d2d]/90"><div className="mx-auto flex max-w-5xl items-center justify-between gap-5 px-5 py-4 lg:px-8"><div className="flex items-center gap-3"><div className="brand-mark"><BarChart3 className="h-4 w-4" /></div><div><p className="text-sm font-semibold tracking-tight text-[#f5f0e5]">SIA</p><p className="text-[10px] font-bold uppercase tracking-[.12em] text-[#aeb8c0]">Painel protegido</p></div></div><div className="hidden border-l border-[#526170] pl-4 text-right sm:block"><p className="text-sm font-semibold text-[#f5f0e5]">{empresa.nome_exibicao}</p><p className="mt-0.5 text-xs text-[#aeb8c0]">Visão geral das avaliações</p></div></div></header>
+      <header className="border-b border-[#526170] bg-[#101d2d]/90"><div className="mx-auto flex max-w-5xl items-center justify-between gap-5 px-5 py-4 lg:px-8"><div className="flex items-center gap-3">{papel === "gestor" && hash ? <Button type="button" variant="ghost" size="sm" onClick={() => navigate(-1)} className="text-[#aeb8c0] hover:bg-white/10 hover:text-white">← Voltar</Button> : null}<div className="brand-mark"><BarChart3 className="h-4 w-4" /></div><div><p className="text-sm font-semibold tracking-tight text-[#f5f0e5]">SIA</p><p className="text-[10px] font-bold uppercase tracking-[.12em] text-[#aeb8c0]">Painel protegido</p></div></div><div className="hidden border-l border-[#526170] pl-4 text-right sm:block"><p className="text-sm font-semibold text-[#f5f0e5]">{empresa.nome_exibicao}</p><p className="mt-0.5 text-xs text-[#aeb8c0]">Visão geral das avaliações</p></div></div></header>
       <div className="mx-auto max-w-5xl px-5 py-10 lg:px-8 lg:py-12">
         <div className="flex items-end justify-between gap-5 border-b border-[#526170] pb-7"><div><p className="eyebrow text-[#d6a66a]">Relatório de reputação</p><h1 className="display-title mt-3 text-3xl text-[#f5f0e5] sm:text-4xl">Suas avaliações</h1><p className="mt-3 text-sm text-[#b7c0c5]">Acompanhe o que seus clientes estão dizendo.</p></div><span className="hidden text-xs font-bold tracking-[.12em] text-[#aeb8c0] sm:block">ACESSO AUTENTICADO</span></div>
         <div className="mt-7 grid overflow-hidden border border-[#526170] bg-[#526170] sm:grid-cols-3">{metrics.map((metric) => <section key={metric.label} className="legacy-card-dark p-5 shadow-none"><div className="flex items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-[.14em] text-[#aeb8c0]">{metric.label}</span><metric.icon className={`h-4 w-4 ${metric.iconClass}`} /></div><div className="mt-5 flex items-baseline gap-2"><span className="text-3xl font-semibold tracking-tight text-[#f5f0e5]">{metric.value}</span><span className="text-xs text-[#aeb8c0]">{metric.suffix}</span></div></section>)}</div>
 
-        <section className="mt-10"><div className="mb-5 flex items-end justify-between border-b border-[#526170] pb-4"><div><p className="eyebrow text-[#d6a66a]">Registros recentes</p><h2 className="mt-2 text-xl font-bold text-[#f5f0e5]">Últimas avaliações</h2><p className="mt-1 text-xs text-[#aeb8c0]">Mais recentes primeiro</p></div><ArrowUpRight className="h-5 w-5 text-[#d6a66a]" /></div>{feedbacks.length === 0 ? <Card className="portal-panel shadow-none"><CardContent className="p-10 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center border border-[#526170] bg-white/5 text-[#d6a66a]"><MessageSquare className="h-5 w-5" /></div><p className="mt-4 text-sm text-[#d4dadd]">Nenhuma avaliação recebida ainda.</p><p className="mt-1 text-xs text-[#aeb8c0]">Quando houver uma nova avaliação, ela aparecerá aqui.</p></CardContent></Card> : <div className="space-y-3">{feedbacks.map((feedback) => <div key={feedback.id} className="relative"><FeedbackCard nota={feedback.nota} comentario={feedback.comentario} tipo_envio={feedback.tipo_envio} created_at={feedback.created_at} />{(feedback.solicitou_retorno || feedback.nome_cliente || feedback.telefone_cliente || feedback.email_cliente) ? <div className="mt-2 grid gap-px border border-[#526170] bg-[#526170] sm:grid-cols-3"><div className="legacy-card-dark p-4"><p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#aeb8c0]">Cliente</p><p className="mt-2 text-sm text-[#f5f0e5]">{feedback.nome_cliente || "Não informado"}</p></div><div className="legacy-card-dark p-4"><p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#aeb8c0]">Celular / WhatsApp</p>{feedback.telefone_cliente ? <a href={gerarLinkWhatsApp(feedback.telefone_cliente)} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-emerald-300 transition-colors hover:text-emerald-200">{feedback.telefone_cliente}</a> : <p className="mt-2 text-sm text-[#7f8b95]">Não informado</p>}</div><div className="legacy-card-dark p-4"><p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#aeb8c0]">E-mail</p>{feedback.email_cliente ? <a href={`mailto:${feedback.email_cliente}`} className="mt-2 block break-all text-sm text-cyan-300 transition-colors hover:text-cyan-200">{feedback.email_cliente}</a> : <p className="mt-2 text-sm text-[#7f8b95]">Não informado</p>}</div></div> : null}{papel === "administrador" && <Button type="button" variant="ghost" size="sm" disabled={deletingId === feedback.id} onClick={() => excluirFeedback(feedback)} className="absolute right-3 top-3 h-8 text-[#dc8a8a] hover:bg-[#612d2d] hover:text-white"><Trash2 className="mr-1 h-3.5 w-3.5" />{deletingId === feedback.id ? "Excluindo" : "Excluir"}</Button>}</div>)}</div>}</section>
+        <section className="mt-10">
+          <div className="mb-5 flex items-end justify-between border-b border-[#526170] pb-4">
+            <div>
+              <p className="eyebrow text-[#d6a66a]">Registros recentes</p>
+              <h2 className="mt-2 text-xl font-bold text-[#f5f0e5]">Últimas avaliações</h2>
+              <p className="mt-1 text-xs text-[#aeb8c0]">Mais recentes primeiro</p>
+            </div>
+            <ArrowUpRight className="h-5 w-5 text-[#d6a66a]" />
+          </div>
+          {feedbacks.length === 0 ? (
+            <Card className="portal-panel shadow-none">
+              <CardContent className="p-10 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center border border-[#526170] bg-white/5 text-[#d6a66a]"><MessageSquare className="h-5 w-5" /></div>
+                <p className="mt-4 text-sm text-[#d4dadd]">Nenhuma avaliação recebida ainda.</p>
+                <p className="mt-1 text-xs text-[#aeb8c0]">Quando houver uma nova avaliação, ela aparecerá aqui.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {feedbacks.map((feedback) => (
+                <div key={feedback.id} className="relative">
+                  <FeedbackCard nota={feedback.nota} comentario={feedback.comentario} tipo_envio={feedback.tipo_envio} created_at={feedback.created_at} />
+
+                  {/* Solicitação de retorno: sempre visível quando aplicável, com status de solução */}
+                  {feedback.solicitou_retorno ? (
+                    <div className={`mt-2 border p-4 transition-colors ${feedback.solucionado ? "border-emerald-500/25 bg-emerald-500/[0.04]" : "border-amber-500/30 bg-amber-500/[0.06]"}`}>
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <span className={`rounded-md border px-2.5 py-1 text-[11px] font-medium ${feedback.solucionado ? "border-emerald-400/25 bg-emerald-400/[0.08] text-emerald-300" : "border-amber-400/25 bg-amber-400/[0.08] text-amber-300"}`}>
+                          Solicitou retorno
+                        </span>
+                        <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-[#d4dadd]">
+                          <input
+                            type="checkbox"
+                            checked={!!feedback.solucionado}
+                            disabled={updatingSolucaoId === feedback.id}
+                            onChange={(e) => alternarSolucionado(feedback, e.target.checked)}
+                            className="h-4 w-4 accent-emerald-500"
+                          />
+                          Solucionado
+                        </label>
+                      </div>
+
+                      <div className="mt-3 grid gap-px border border-[#526170] bg-[#526170] sm:grid-cols-3">
+                        <div className="legacy-card-dark p-4">
+                          <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#aeb8c0]">Cliente</p>
+                          <p className="mt-2 text-sm text-[#f5f0e5]">{feedback.nome_cliente || "Não informado"}</p>
+                        </div>
+                        <div className="legacy-card-dark p-4">
+                          <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#aeb8c0]">Celular / WhatsApp</p>
+                          {feedback.telefone_cliente ? (
+                            <a href={gerarLinkWhatsApp(feedback.telefone_cliente)} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-emerald-300 transition-colors hover:text-emerald-200">{feedback.telefone_cliente}</a>
+                          ) : (
+                            <p className="mt-2 text-sm text-[#7f8b95]">Não informado</p>
+                          )}
+                        </div>
+                        <div className="legacy-card-dark p-4">
+                          <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#aeb8c0]">E-mail</p>
+                          {feedback.email_cliente ? (
+                            <a href={`mailto:${feedback.email_cliente}`} className="mt-2 block break-all text-sm text-cyan-300 transition-colors hover:text-cyan-200">{feedback.email_cliente}</a>
+                          ) : (
+                            <p className="mt-2 text-sm text-[#7f8b95]">Não informado</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {papel === "administrador" && (
+                    <Button type="button" variant="ghost" size="sm" disabled={deletingId === feedback.id} onClick={() => excluirFeedback(feedback)} className="absolute right-3 top-3 h-8 text-[#dc8a8a] hover:bg-[#612d2d] hover:text-white">
+                      <Trash2 className="mr-1 h-3.5 w-3.5" />
+                      {deletingId === feedback.id ? "Excluindo" : "Excluir"}
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
         <footer className="mt-12 border-t border-[#526170] pt-6 text-center text-xs text-[#aeb8c0]">SIA — Sistema Inteligente de Avaliações</footer>
       </div>
     </main>

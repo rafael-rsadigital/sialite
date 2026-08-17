@@ -98,6 +98,7 @@ export type Database = {
           nome_cliente: string | null
           nota: number
           solicitou_retorno: boolean
+          solucionado: boolean
           telefone_cliente: string | null
           tipo_envio: string
         }
@@ -110,6 +111,7 @@ export type Database = {
           nome_cliente?: string | null
           nota: number
           solicitou_retorno?: boolean
+          solucionado?: boolean
           telefone_cliente?: string | null
           tipo_envio?: string
         }
@@ -122,6 +124,7 @@ export type Database = {
           nome_cliente?: string | null
           nota?: number
           solicitou_retorno?: boolean
+          solucionado?: boolean
           telefone_cliente?: string | null
           tipo_envio?: string
         }
@@ -275,6 +278,14 @@ export type Database = {
       }
       eh_administrador: { Args: never; Returns: boolean }
       empresa_atual_id: { Args: never; Returns: string }
+      excluir_empresa: {
+        Args: { p_empresa_id: string }
+        Returns: undefined
+      }
+      excluir_gestor: {
+        Args: { p_gestor_id: string }
+        Returns: undefined
+      }
       gestor_atual_id: { Args: never; Returns: string }
       papel_atual: {
         Args: never

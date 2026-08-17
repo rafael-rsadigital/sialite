@@ -261,13 +261,33 @@ export default function AdminRSA() {
     setSavingGestor(false);
   };
 
-  const deleteGestor = async (id: string) => {
-    const { error } = await supabase.from("gestores").delete().eq("id", id);
+  const deleteGestor = async (id: string, nome: string) => {
+    const confirmado = window.confirm(
+      `Excluir o gestor "${nome}"? As empresas vinculadas a ele não serão apagadas, apenas ficarão sem gestor. O acesso de login deste gestor também será removido.`
+    );
+    if (!confirmado) return;
+
+    const { error } = await supabase.rpc("excluir_gestor", { p_gestor_id: id });
     if (error) {
-      toast.error("Erro ao excluir gestor");
+      toast.error(error.message || "Erro ao excluir gestor");
     } else {
       setGestores(gestores.filter(g => g.id !== id));
       toast.success("Gestor excluído");
+    }
+  };
+
+  const deleteEmpresa = async (id: string, nome: string) => {
+    const confirmado = window.confirm(
+      `Excluir a empresa "${nome}" definitivamente? Todas as avaliações recebidas por ela também serão apagadas. Esta ação não pode ser desfeita.`
+    );
+    if (!confirmado) return;
+
+    const { error } = await supabase.rpc("excluir_empresa", { p_empresa_id: id });
+    if (error) {
+      toast.error(error.message || "Erro ao excluir empresa");
+    } else {
+      setEmpresas(empresas.filter(e => e.id !== id));
+      toast.success("Empresa excluída");
     }
   };
 
@@ -547,7 +567,7 @@ export default function AdminRSA() {
                                     <Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => window.open(empresa.link_asaas!, '_blank')}><ExternalLink className="w-4 h-4 mr-1" />Abrir</Button>
                                   ) : <span className="text-slate-500 text-sm">—</span>}
                                 </TableCell>
-                                <TableCell className="text-right"><div className="flex justify-end gap-2"><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => iniciarEdicaoEmpresa(empresa)}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => abrirAcessoDaEmpresa(empresa)}><KeyRound className="mr-1 h-3.5 w-3.5" />Acesso</Button></div></TableCell>
+                                <TableCell className="text-right"><div className="flex justify-end gap-2"><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => iniciarEdicaoEmpresa(empresa)}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => abrirAcessoDaEmpresa(empresa)}><KeyRound className="mr-1 h-3.5 w-3.5" />Acesso</Button><Button size="sm" variant="outline" className="border-red-500/30 text-red-300 hover:bg-red-500/10 hover:text-red-200" onClick={() => deleteEmpresa(empresa.id, empresa.nome_exibicao)}><Trash2 className="mr-1 h-3.5 w-3.5" />Excluir</Button></div></TableCell>
                               </TableRow>
                             );
                           })}
@@ -641,7 +661,7 @@ export default function AdminRSA() {
                               size="sm"
                               variant="ghost"
                               className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                              onClick={() => deleteGestor(gestor.id)}
+                              onClick={() => deleteGestor(gestor.id, gestor.nome)}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>

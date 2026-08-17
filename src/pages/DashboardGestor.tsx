@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Shield, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, ArrowLeft, Building2 } from "lucide-react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { Shield, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, ArrowLeft, Building2, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -237,6 +237,7 @@ export default function DashboardGestor() {
                         <TableHead className="text-slate-400">Vencimento</TableHead>
                         <TableHead className="text-slate-400">Valor</TableHead>
                         <TableHead className="text-slate-400">Pagamento</TableHead>
+                        <TableHead className="text-slate-400">Avaliações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -296,6 +297,19 @@ export default function DashboardGestor() {
                               ) : (
                                 <span className="text-slate-500 text-sm">—</span>
                               )}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                asChild
+                                size="sm"
+                                variant="outline"
+                                className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 hover:text-cyan-200"
+                              >
+                                <Link to={`/dashboard/${empresa.hash_secreto}`}>
+                                  <BarChart3 className="w-4 h-4 mr-1" />
+                                  Ver dashboard
+                                </Link>
+                              </Button>
                             </TableCell>
                           </TableRow>
                         );
