@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { encerrarSessao, obterPerfilAtual } from "@/lib/auth";
 import { toast } from "sonner";
+import { Navigate } from "react-router-dom";
 
 interface Empresa {
   id: string;
@@ -54,9 +55,7 @@ interface Acesso {
 
 export default function AdminRSA() {
   const [autenticado, setAutenticado] = useState(false);
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [erroSenha, setErroSenha] = useState("");
+  const [verificandoSessao, setVerificandoSessao] = useState(true);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [gestores, setGestores] = useState<Gestor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -158,26 +157,12 @@ export default function AdminRSA() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !senha) { setErroSenha("Informe seu e-mail e sua senha"); return; }
-    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: senha });
-    if (error || !data.user) { setErroSenha("E-mail ou senha inválidos"); return; }
-    const perfil = await obterPerfilAtual();
-    if (perfil?.papel !== "administrador") {
-      await encerrarSessao();
-      setErroSenha("Esta conta não possui permissão de administrador");
-      return;
-    }
-    setAutenticado(true);
-    setErroSenha("");
-  };
-
   useEffect(() => {
     async function recuperarSessao() {
       const perfil = await obterPerfilAtual();
       if (perfil?.papel === "administrador") setAutenticado(true);
       else setLoading(false);
+      setVerificandoSessao(false);
     }
     recuperarSessao();
   }, []);
