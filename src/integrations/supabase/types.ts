@@ -92,25 +92,37 @@ export type Database = {
         Row: {
           comentario: string | null
           created_at: string
+          email_cliente: string | null
           empresa_id: string
           id: string
+          nome_cliente: string | null
           nota: number
+          solicitou_retorno: boolean
+          telefone_cliente: string | null
           tipo_envio: string
         }
         Insert: {
           comentario?: string | null
           created_at?: string
+          email_cliente?: string | null
           empresa_id: string
           id?: string
+          nome_cliente?: string | null
           nota: number
+          solicitou_retorno?: boolean
+          telefone_cliente?: string | null
           tipo_envio?: string
         }
         Update: {
           comentario?: string | null
           created_at?: string
+          email_cliente?: string | null
           empresa_id?: string
           id?: string
+          nome_cliente?: string | null
           nota?: number
+          solicitou_retorno?: boolean
+          telefone_cliente?: string | null
           tipo_envio?: string
         }
         Relationships: [
@@ -271,8 +283,12 @@ export type Database = {
       registrar_feedback_publico: {
         Args: {
           p_comentario?: string
+          p_email_cliente?: string
+          p_nome_cliente?: string
           p_nota: number
           p_slug: string
+          p_solicitou_retorno?: boolean
+          p_telefone_cliente?: string
           p_tipo_envio?: string
         }
         Returns: string

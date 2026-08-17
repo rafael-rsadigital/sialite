@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Lock, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, Zap, Building2, UserPlus, LayoutDashboard, Save, Trash2, Pencil, LogOut, Mail } from "lucide-react";
+import { Shield, Lock, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, Zap, Building2, UserPlus, LayoutDashboard, Save, Trash2, Pencil, LogOut, Mail, KeyRound } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,16 @@ interface Gestor {
   created_at: string;
 }
 
+interface Acesso {
+  id: string;
+  papel: string;
+  empresa_id: string | null;
+  gestor_id: string | null;
+  nome_exibicao: string | null;
+  email: string | null;
+}
+
+
 export default function AdminRSA() {
   const [autenticado, setAutenticado] = useState(false);
   const [email, setEmail] = useState("");
@@ -76,6 +86,49 @@ export default function AdminRSA() {
   });
   const [savingEmpresa, setSavingEmpresa] = useState(false);
   const [editingEmpresaId, setEditingEmpresaId] = useState<string | null>(null);
+
+  // Acessos (logins)
+  const [acessos, setAcessos] = useState<Acesso[]>([]);
+  const [loadingAcessos, setLoadingAcessos] = useState(false);
+  const [savingAcesso, setSavingAcesso] = useState(false);
+  const [acessoForm, setAcessoForm] = useState({ email: "", senha: "", nome_exibicao: "", papel: "empresa", empresa_id: "", gestor_id: "" });
+
+  const carregarAcessos = async () => {
+    setLoadingAcessos(true);
+    const { data, error } = await supabase.functions.invoke("gerenciar-acessos", { body: { acao: "listar" } });
+    if (error || data?.error) toast.error(data?.error || "Erro ao carregar acessos");
+    else setAcessos(data.acessos || []);
+    setLoadingAcessos(false);
+  };
+
+  const handleSalvarAcesso = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingAcesso(true);
+    const { data, error } = await supabase.functions.invoke("gerenciar-acessos", {
+      body: { acao: "criar", ...acessoForm },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || "Erro ao salvar acesso");
+    } else {
+      toast.success(data.criado ? "Acesso criado com sucesso!" : "Acesso atualizado com sucesso!");
+      setAcessoForm({ email: "", senha: "", nome_exibicao: "", papel: "empresa", empresa_id: "", gestor_id: "" });
+      carregarAcessos();
+    }
+    setSavingAcesso(false);
+  };
+
+  const removerAcesso = async (perfilId: string) => {
+    const { data, error } = await supabase.functions.invoke("gerenciar-acessos", { body: { acao: "remover", perfil_id: perfilId } });
+    if (error || data?.error) toast.error(data?.error || "Erro ao remover acesso");
+    else { toast.success("Acesso removido"); setAcessos((a) => a.filter((x) => x.id !== perfilId)); }
+  };
+
+  const abrirAcessoDaEmpresa = (empresa: Empresa) => {
+    setAcessoForm({ email: empresa.email_empresa || "", senha: "", nome_exibicao: empresa.nome_exibicao, papel: "empresa", empresa_id: empresa.id, gestor_id: "" });
+    setActiveTab("acessos");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
 
   const limparFormularioEmpresa = () => {
     setEditingEmpresaId(null);
@@ -130,8 +183,9 @@ export default function AdminRSA() {
   }, []);
 
   useEffect(() => {
-    if (autenticado) fetchData();
+    if (autenticado) { fetchData(); carregarAcessos(); }
   }, [autenticado]);
+
 
   const fetchData = async () => {
     setLoading(true);
@@ -357,7 +411,12 @@ export default function AdminRSA() {
                 <Building2 className="w-4 h-4 mr-2" />
                 Cadastro Empresas
               </TabsTrigger>
+              <TabsTrigger value="acessos" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
+                <KeyRound className="w-4 h-4 mr-2" />
+                Acessos
+              </TabsTrigger>
             </TabsList>
+
 
             {/* Dashboard Tab */}
             <TabsContent value="dashboard" className="space-y-6">
@@ -488,7 +547,7 @@ export default function AdminRSA() {
                                     <Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => window.open(empresa.link_asaas!, '_blank')}><ExternalLink className="w-4 h-4 mr-1" />Abrir</Button>
                                   ) : <span className="text-slate-500 text-sm">—</span>}
                                 </TableCell>
-                                <TableCell className="text-right"><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => iniciarEdicaoEmpresa(empresa)}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button></TableCell>
+                                <TableCell className="text-right"><div className="flex justify-end gap-2"><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => iniciarEdicaoEmpresa(empresa)}><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button><Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => abrirAcessoDaEmpresa(empresa)}><KeyRound className="mr-1 h-3.5 w-3.5" />Acesso</Button></div></TableCell>
                               </TableRow>
                             );
                           })}
@@ -779,7 +838,101 @@ export default function AdminRSA() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {/* Acessos Tab */}
+            <TabsContent value="acessos" className="space-y-6">
+              <div className="grid lg:grid-cols-2 gap-6">
+                <Card className="bg-white/5 backdrop-blur-sm border-white/10 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2"><KeyRound className="w-5 h-5 text-violet-400" />Criar / atualizar acesso</CardTitle>
+                    <CardDescription className="text-slate-400">Cadastre o login do empresário ou do gestor. Se o e-mail já existir, o perfil é apenas vinculado (e a senha atualizada, se informada).</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleSalvarAcesso} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-white/80">E-mail <span className="text-red-400">*</span></Label>
+                        <Input type="email" value={acessoForm.email} onChange={(e) => setAcessoForm({ ...acessoForm, email: e.target.value })} placeholder="empresario@empresa.com" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-white/80">Senha (mín. 8 caracteres)</Label>
+                        <Input type="text" value={acessoForm.senha} onChange={(e) => setAcessoForm({ ...acessoForm, senha: e.target.value })} placeholder="senha inicial" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-white/80">Nome de exibição</Label>
+                        <Input value={acessoForm.nome_exibicao} onChange={(e) => setAcessoForm({ ...acessoForm, nome_exibicao: e.target.value })} placeholder="Nome do responsável" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-white/80">Papel <span className="text-red-400">*</span></Label>
+                        <Select value={acessoForm.papel} onValueChange={(v) => setAcessoForm({ ...acessoForm, papel: v, empresa_id: "", gestor_id: "" })}>
+                          <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
+                          <SelectContent className="bg-slate-900 border-white/10 text-white">
+                            <SelectItem value="empresa">Empresa</SelectItem>
+                            <SelectItem value="gestor">Gestor</SelectItem>
+                            <SelectItem value="administrador">Administrador</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {acessoForm.papel === "empresa" && (
+                        <div className="space-y-2">
+                          <Label className="text-white/80">Empresa <span className="text-red-400">*</span></Label>
+                          <Select value={acessoForm.empresa_id} onValueChange={(v) => setAcessoForm({ ...acessoForm, empresa_id: v })}>
+                            <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue placeholder="Selecione a empresa" /></SelectTrigger>
+                            <SelectContent className="bg-slate-900 border-white/10 text-white">
+                              {empresas.map((e) => <SelectItem key={e.id} value={e.id}>{e.nome_exibicao}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                      {acessoForm.papel === "gestor" && (
+                        <div className="space-y-2">
+                          <Label className="text-white/80">Gestor <span className="text-red-400">*</span></Label>
+                          <Select value={acessoForm.gestor_id} onValueChange={(v) => setAcessoForm({ ...acessoForm, gestor_id: v })}>
+                            <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue placeholder="Selecione o gestor" /></SelectTrigger>
+                            <SelectContent className="bg-slate-900 border-white/10 text-white">
+                              {gestores.map((g) => <SelectItem key={g.id} value={g.id}>{g.nome}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                      <Button type="submit" disabled={savingAcesso} className="w-full h-12 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700">
+                        {savingAcesso ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Save className="w-4 h-4 mr-2" />Salvar acesso</>}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/5 backdrop-blur-sm border-white/10 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2"><Users className="w-5 h-5 text-violet-400" />Acessos cadastrados</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingAcessos ? (
+                      <div className="flex justify-center py-8"><div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" /></div>
+                    ) : acessos.length === 0 ? (
+                      <p className="text-slate-400 text-center py-8">Nenhum acesso cadastrado</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {acessos.map((a) => (
+                          <div key={a.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
+                            <div className="min-w-0">
+                              <p className="text-white text-sm truncate">{a.email || a.nome_exibicao || a.id}</p>
+                              <p className="text-xs text-slate-500 truncate">
+                                {a.papel === "empresa" ? `Empresa · ${empresas.find((e) => e.id === a.empresa_id)?.nome_exibicao || "—"}`
+                                  : a.papel === "gestor" ? `Gestor · ${gestores.find((g) => g.id === a.gestor_id)?.nome || "—"}`
+                                  : "Administrador"}
+                              </p>
+                            </div>
+                            <Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/10" onClick={() => removerAcesso(a.id)}><Trash2 className="w-4 h-4" /></Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
           </Tabs>
+
 
           {/* Footer */}
           <footer className="mt-8 py-6 border-t border-white/5">

@@ -122,6 +122,7 @@ export default function DashboardGestor() {
     return new Date(dataVencimento) < new Date();
   };
 
+
   // Métricas
   const assinaturasAtivas = empresas.filter(e => e.status_assinatura).length;
   const vencidasInadimplentes = empresas.filter(e => !e.status_assinatura || isVencida(e.data_vencimento)).length;
