@@ -41,6 +41,7 @@ export function FeedbackCard({
   tipo_envio,
   created_at,
   nomeCliente,
+  produtoServico,
   telefoneCliente,
   emailCliente,
   solicitouRetorno,
