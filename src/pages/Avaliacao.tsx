@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { CheckCircle2, Copy, ExternalLink, Loader2, Mail, MessageCircle, Pencil, Star, UserRound } from "lucide-react";
+import { CheckCircle2, ExternalLink, Loader2, Mail, MessageCircle, Pencil, Star, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -115,44 +115,30 @@ export default function Avaliacao() {
     emailCliente: emailRetorno.trim() || undefined,
   });
 
+  const handleAvancarPositivo = async () => {
+    if (enviando) return;
+    setEnviando(true);
+    try {
+      const salvo = await salvarFeedback("google", "");
+      if (!salvo) return;
+      if (empresa?.link_google) window.open(empresa.link_google, "_blank");
+      setSubmitted(true);
+    } finally {
+      setEnviando(false);
+    }
+  };
+
   const handleRegistrar = () => {
     if (nota === 0) {
       toast.error("Por favor, selecione uma nota");
       return;
     }
+    if (nota >= 4) {
+      handleAvancarPositivo();
+      return;
+    }
     if (!nomeRetorno.trim()) setNomeRetorno(nomeCliente.trim());
     setEtapa("desfecho");
-  };
-
-  const handleCopyAndRedirect = async () => {
-    if (enviando || copied) return;
-    setEnviando(true);
-    try {
-      const texto = montarFeedback();
-      try {
-        await navigator.clipboard.writeText(texto);
-      } catch {
-        const textArea = document.createElement("textarea");
-        textArea.value = texto;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-999999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-      }
-
-      const salvo = await salvarFeedback("google", texto);
-      if (!salvo) return;
-      setCopied(true);
-      toast.success("Comentário copiado!");
-      setTimeout(() => {
-        if (empresa?.link_google) window.open(empresa.link_google, "_blank");
-      }, 500);
-    } finally {
-      setEnviando(false);
-    }
   };
 
   const handleWhatsApp = async () => {
@@ -219,9 +205,20 @@ export default function Avaliacao() {
       <main className="ink-shell flex items-center justify-center p-5">
         <section className="portal-panel w-full max-w-xl p-8 text-center sm:p-12">
           <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[#d6a66a] bg-[#d6a66a]/10 text-[#d6a66a]"><CheckCircle2 className="h-7 w-7" /></div>
-          <p className="eyebrow mt-7 text-[#d6a66a]">Reclamação registrada</p>
-          <h1 className="display-title mt-3 text-3xl text-[#f5f0e5]">Obrigado por compartilhar sua experiência.</h1>
-          <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-[#c1c9cf]">Seu relato foi registrado. Vamos trabalhar para evoluir continuamente e oferecer uma experiência melhor nas próximas oportunidades.</p>
+          {isPositive ? (
+            <>
+              <p className="eyebrow mt-7 text-[#d6a66a]">Avaliação registrada</p>
+              <h1 className="display-title mt-3 text-3xl text-[#f5f0e5]">Obrigado! Abrimos o Google para você em outra aba.</h1>
+              <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-[#c1c9cf]">Complete sua avaliação por lá para ajudar mais pessoas a conhecerem a {empresa.nome_exibicao}. Se a aba não abriu, verifique o bloqueador de pop-ups do seu navegador.</p>
+              {empresa.link_google && <a href={empresa.link_google} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#d6a66a] underline underline-offset-4">Abrir avaliação do Google <ExternalLink className="h-3.5 w-3.5" /></a>}
+            </>
+          ) : (
+            <>
+              <p className="eyebrow mt-7 text-[#d6a66a]">Reclamação registrada</p>
+              <h1 className="display-title mt-3 text-3xl text-[#f5f0e5]">Obrigado por compartilhar sua experiência.</h1>
+              <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-[#c1c9cf]">Seu relato foi registrado. Vamos trabalhar para evoluir continuamente e oferecer uma experiência melhor nas próximas oportunidades.</p>
+            </>
+          )}
           {isDemo && <p className="mt-7 border border-[#526170] bg-white/5 px-4 py-3 text-xs text-[#aeb8c0]">Modo demonstração — nenhum dado foi salvo.</p>}
         </section>
       </main>
@@ -234,7 +231,7 @@ export default function Avaliacao() {
         <div className="mx-auto max-w-md">
           {isDemo && <div className="mb-8 text-center"><span className="inline-flex bg-slate-900 px-3 py-1.5 text-xs font-medium text-white">Demonstração</span></div>}
           <header className="mb-12 text-center"><img src={siaLogo} alt="SIA Lite" className="sia-logo-lockup mx-auto mb-4" /><p className="eyebrow">Sua avaliação</p><h1 className="display-title mt-3 text-3xl text-slate-800">Obrigado por escolher a <span className="font-bold">{empresa.nome_exibicao}</span></h1><p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-slate-500">Sua opinião nos ajuda a melhorar continuamente.</p></header>
-          <section className="review-card border border-slate-100/80 p-8 sm:p-10"><div className="mb-10 flex justify-center"><StarRating value={nota} onChange={setNota} /></div><div className="mb-6 space-y-5"><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="nome-cliente">Como podemos te chamar</label><Input id="nome-cliente" maxLength={120} value={nomeCliente} onChange={(e) => setNomeCliente(e.target.value)} placeholder="Seu nome" className="legacy-field mt-2 px-3 text-sm" /></div><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="produto-servico">Qual o nome do produto adquirido ou do serviço realizado</label><Input id="produto-servico" maxLength={200} value={produtoServico} onChange={(e) => setProdutoServico(e.target.value)} placeholder="Ex.: corte de cabelo, troca de óleo..." className="legacy-field mt-2 px-3 text-sm" /></div></div><div className="mb-8"><Textarea maxLength={2000} placeholder="Conte-nos sobre sua experiência (opcional)" value={comentario} onChange={(e) => setComentario(e.target.value)} className="min-h-[120px] resize-none rounded-lg border-slate-200 bg-slate-50 text-sm text-slate-700 placeholder:text-slate-400 focus:border-slate-300 focus:bg-white focus:ring-slate-100" /></div><Button onClick={handleRegistrar} className="legacy-button h-12 w-full text-sm font-bold" size="lg">Enviar avaliação</Button></section>
+          <section className="review-card border border-slate-100/80 p-8 sm:p-10"><div className="mb-10 flex justify-center"><StarRating value={nota} onChange={setNota} /></div><div className="mb-8 space-y-5"><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="nome-cliente">Como podemos te chamar</label><Input id="nome-cliente" maxLength={120} value={nomeCliente} onChange={(e) => setNomeCliente(e.target.value)} placeholder="Seu nome" className="legacy-field mt-2 px-3 text-sm" /></div><div><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="produto-servico">Qual o nome do produto adquirido ou do serviço realizado</label><Input id="produto-servico" maxLength={200} value={produtoServico} onChange={(e) => setProdutoServico(e.target.value)} placeholder="Ex.: corte de cabelo, troca de óleo..." className="legacy-field mt-2 px-3 text-sm" /></div></div><Button onClick={handleRegistrar} disabled={enviando} className="legacy-button h-12 w-full text-sm font-bold" size="lg">{enviando ? <span className="flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Aguarde...</span> : "Avançar"}</Button></section>
           <p className="mt-8 text-center text-xs text-slate-400">Powered by SIA</p>
         </div>
       </main>
@@ -259,29 +256,15 @@ export default function Avaliacao() {
   }
 
   return (
-    <main className={isPositive ? "positive-stage min-h-screen px-4 py-10 sm:py-14" : "min-h-screen paper-screen px-4 py-10 sm:py-14"}>
+    <main className="min-h-screen paper-screen px-4 py-10 sm:py-14">
       <div className="mx-auto max-w-md animate-fade-in">
         {isDemo && <div className="mb-6 text-center"><span className="inline-flex bg-[#f5f0e5]/10 px-3 py-1.5 text-xs font-medium text-[#f5f0e5]">Demonstração</span></div>}
-        {isPositive ? (
-          <section className="positive-panel p-7 text-center sm:p-9">
-            <div className="positive-rating-mark" aria-label="Cinco estrelas">{Array.from({ length: 5 }).map((_, index) => <span key={index} aria-hidden="true" className="positive-star" />)}</div>
-            <p className="mt-5 text-[10px] font-bold uppercase tracking-[.18em] text-[#efbf43]">Muito obrigado</p>
-            <h1 className="display-title mx-auto mt-3 max-w-sm text-3xl leading-tight text-[#f9f3e7] sm:text-4xl">Ficamos muito felizes que tenha gostado do nosso atendimento</h1>
-            <p className="mx-auto mt-5 max-w-sm text-sm leading-6 text-[#d6d0c4]">Compartilhe essa avaliação e comentário em nossa página do Google e ajude outras pessoas a conhecerem a {empresa.nome_exibicao}! Basta clicar no botão abaixo e seu texto será copiado automaticamente.</p>
-            <div className="mt-7 text-left"><label className="text-[10px] font-bold uppercase tracking-[.14em] text-[#d4cbbb]" htmlFor="comentario-positivo">Seu comentário</label><Textarea id="comentario-positivo" maxLength={2000} placeholder="Adicione ou edite seu comentário..." value={comentario} onChange={(e) => setComentario(e.target.value)} className="positive-textarea mt-2 min-h-[96px] resize-none text-sm text-[#f9f3e7] placeholder:text-[#a9bed0] focus:ring-[#67bdec]/20" /></div>
-            {empresa.modelo_sugestao && <div className="positive-suggestion mt-4 p-4 text-left"><p className="text-[10px] font-bold uppercase tracking-[.13em] text-[#b8d7ea]">Sugestão de mensagem</p><p className="mt-2 text-sm leading-6 text-[#e0edf5]">“{empresa.modelo_sugestao}”</p></div>}
-            <Button onClick={handleCopyAndRedirect} disabled={enviando || copied} className="positive-cta mt-6 h-12 w-full gap-2 text-sm font-bold" size="lg">{enviando ? <><Loader2 className="h-4 w-4 animate-spin" />Aguarde...</> : copied ? <><CheckCircle2 className="h-4 w-4" />Copiado — abrindo Google</> : <><Copy className="h-4 w-4" />Copiar e avaliar no Google <ExternalLink className="h-3.5 w-3.5 opacity-75" /></>}</Button>
-            <button onClick={() => setEtapa("coleta")} className="positive-edit-link mt-5 flex w-full items-center justify-center gap-1.5 transition-colors"><Pencil className="h-3.5 w-3.5" strokeWidth={1.5} />Alterar nota</button>
-            <p className="mt-7 text-[11px] text-[#aaa399]">SIA — Sistema Inteligente de Avaliações</p>
-          </section>
-        ) : (
-          <section className="review-card border border-slate-100/80 p-8 sm:p-10">
-            <header className="text-center"><div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center border border-[#b9c1c9] bg-[#ece9df] text-[#214d76]"><MessageCircle className="h-6 w-6" strokeWidth={1.5} /></div><p className="eyebrow">Sua opinião importa</p><h1 className="display-title mt-3 text-3xl text-slate-800">Lamentamos que sua experiência não tenha sido ideal.</h1><p className="mt-3 text-sm leading-6 text-slate-500">Seu relato nos ajuda a entender e melhorar.</p></header>
-            <div className="mt-8"><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="comentario-negativo">Seu comentário</label><Textarea id="comentario-negativo" maxLength={2000} placeholder="Descreva o que podemos melhorar..." value={comentario} onChange={(e) => setComentario(e.target.value)} className="mt-2 min-h-[110px] resize-none rounded-lg border-slate-200 bg-slate-50 text-sm text-slate-700 placeholder:text-slate-400 focus:border-slate-300 focus:bg-white focus:ring-slate-100" /></div>
-            <div className="mt-7 border-y border-[#d6cebf] py-6 text-center"><p className="text-base font-semibold leading-6 text-[#233d55]">Deseja receber um retorno sobre sua reclamação?</p><div className="mt-5 grid gap-3 sm:grid-cols-2"><Button onClick={() => setEtapa("retorno")} className="legacy-button h-12 text-sm font-bold">Sim</Button><Button onClick={handleFinalizar} variant="outline" className="legacy-button-secondary h-12 text-sm font-semibold">Registrar e finalizar</Button></div></div>
-            <button onClick={() => setEtapa("coleta")} className="mt-5 flex w-full items-center justify-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-slate-700"><Pencil className="h-3.5 w-3.5" strokeWidth={1.5} />Alterar nota</button>
-          </section>
-        )}
+        <section className="review-card border border-slate-100/80 p-8 sm:p-10">
+          <header className="text-center"><div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center border border-[#b9c1c9] bg-[#ece9df] text-[#214d76]"><MessageCircle className="h-6 w-6" strokeWidth={1.5} /></div><p className="eyebrow">Sua opinião importa</p><h1 className="display-title mt-3 text-3xl text-slate-800">Lamentamos que sua experiência não tenha sido ideal.</h1><p className="mt-3 text-sm leading-6 text-slate-500">Seu relato nos ajuda a entender e melhorar.</p></header>
+          <div className="mt-8"><label className="text-xs font-bold uppercase tracking-[.1em] text-[#31495f]" htmlFor="comentario-negativo">Seu comentário</label><Textarea id="comentario-negativo" maxLength={2000} placeholder="Descreva o que podemos melhorar..." value={comentario} onChange={(e) => setComentario(e.target.value)} className="mt-2 min-h-[110px] resize-none rounded-lg border-slate-200 bg-slate-50 text-sm text-slate-700 placeholder:text-slate-400 focus:border-slate-300 focus:bg-white focus:ring-slate-100" /></div>
+          <div className="mt-7 border-y border-[#d6cebf] py-6 text-center"><p className="text-base font-semibold leading-6 text-[#233d55]">Deseja receber um retorno sobre sua reclamação?</p><div className="mt-5 grid gap-3 sm:grid-cols-2"><Button onClick={() => setEtapa("retorno")} className="legacy-button h-12 text-sm font-bold">Sim</Button><Button onClick={handleFinalizar} variant="outline" className="legacy-button-secondary h-12 text-sm font-semibold">Registrar e finalizar</Button></div></div>
+          <button onClick={() => setEtapa("coleta")} className="mt-5 flex w-full items-center justify-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-slate-700"><Pencil className="h-3.5 w-3.5" strokeWidth={1.5} />Alterar nota</button>
+        </section>
       </div>
     </main>
   );
