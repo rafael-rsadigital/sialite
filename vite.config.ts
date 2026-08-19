@@ -18,6 +18,10 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
+      // Registro manual: só ativamos o app instalável nas telas de gestão
+      // (login/dashboard/admin), não na página pública de avaliação nem na
+      // landing — ver src/main.tsx.
+      injectRegister: false,
       includeAssets: ["favicon.ico", "apple-touch-icon.png"],
       manifest: {
         name: "SIA Lite",
