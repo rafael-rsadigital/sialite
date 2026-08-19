@@ -97,7 +97,14 @@ export default function Index() {
               Área do cliente
             </button>
           </div>
-          <span className="border-l border-[#4a7394] pl-4 text-[10px] font-bold uppercase tracking-[0.14em] text-[#6de0ee]">
+          <button
+            type="button"
+            onClick={() => navigate("/acesso")}
+            className="border border-[#4a7394] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[#d2e7f5] transition-colors hover:border-[#68d9ef] hover:text-[#68d9ef] md:hidden"
+          >
+            Entrar
+          </button>
+          <span className="hidden border-l border-[#4a7394] pl-4 text-[10px] font-bold uppercase tracking-[0.14em] text-[#6de0ee] md:inline">
             Reputação e feedback
           </span>
         </nav>
