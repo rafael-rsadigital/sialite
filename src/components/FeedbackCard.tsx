@@ -76,7 +76,7 @@ export function FeedbackCard({
               </div>
             </div>
             <span className="whitespace-nowrap text-xs text-slate-600">
-              {format(new Date(created_at), "dd/MM/yyyy", { locale: ptBR })}
+              {format(new Date(created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
             </span>
           </div>
 
