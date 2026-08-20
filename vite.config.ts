@@ -43,6 +43,9 @@ export default defineConfig(({ mode }) => ({
         // Não usa cache agressivo de API/HTML para não deixar dados do dashboard desatualizados
         navigateFallbackDenylist: [/^\/api\//],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
       },
     }),
   ].filter(Boolean),

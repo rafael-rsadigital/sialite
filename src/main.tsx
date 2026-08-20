@@ -14,6 +14,14 @@ if (permiteInstalacao) {
   import("virtual:pwa-register").then(({ registerSW }) => {
     registerSW({ immediate: true });
   });
+  // Garante que uma aba já aberta recarregue sozinha assim que a nova versão
+  // do app assumir o controle — evita ficar preso numa versão antiga em cache.
+  let recarregando = false;
+  navigator.serviceWorker?.addEventListener?.("controllerchange", () => {
+    if (recarregando) return;
+    recarregando = true;
+    window.location.reload();
+  });
 } else {
   document.querySelector('link[rel="manifest"]')?.remove();
 }
