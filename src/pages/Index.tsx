@@ -4,7 +4,6 @@ import {
   BarChart3,
   Check,
   Link2,
-  MessageCircle,
   MessageSquare,
   Play,
   ShieldCheck,
@@ -27,6 +26,14 @@ const WHATSAPP_SIA = "5512988052097";
 
 function linkWhatsAppSia(mensagem: string) {
   return `https://wa.me/${WHATSAPP_SIA}?text=${encodeURIComponent(mensagem)}`;
+}
+
+function WhatsAppIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.47-.148-.669.15-.198.297-.767.966-.94 1.164-.173.198-.347.223-.644.075-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.004 2C6.478 2 2 6.478 2 12.004c0 2.116.553 4.19 1.604 6.005L2 22l4.116-1.605A9.965 9.965 0 0012.004 22C17.53 22 22 17.522 22 11.996 22 6.47 17.53 2 12.004 2zm0 18.062a8.06 8.06 0 01-4.126-1.129l-.296-.176-2.445.937.965-2.377-.192-.309a8.06 8.06 0 01-1.24-4.28c0-4.462 3.63-8.093 8.09-8.093 4.462 0 8.093 3.631 8.093 8.093 0 4.462-3.63 8.334-8.849 8.334z" />
+    </svg>
+  );
 }
 
 const features = [
@@ -63,9 +70,13 @@ export default function Index() {
   const [linkAvaliacao, setLinkAvaliacao] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLinkDialog, setShowLinkDialog] = useState(false);
+  const [etapaDialogLink, setEtapaDialogLink] = useState<"inicial" | "pergunta_ajuda">("inicial");
 
   const handleOpenLinkDialog = () => {
-    if (nomeEmpresa.trim()) setShowLinkDialog(true);
+    if (nomeEmpresa.trim()) {
+      setEtapaDialogLink("inicial");
+      setShowLinkDialog(true);
+    }
   };
 
   const handleProsseguir = async (comLink: boolean) => {
@@ -91,7 +102,7 @@ export default function Index() {
         aria-label="Falar no WhatsApp"
         className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-black/30 transition-transform hover:scale-105"
       >
-        <MessageCircle className="h-7 w-7" fill="currentColor" strokeWidth={0} />
+        <WhatsAppIcon className="h-7 w-7" />
       </a>
       <header className="masthead relative z-10">
         <nav className="mx-auto flex max-w-6xl items-center justify-between gap-5 px-5 py-4 lg:px-8">
@@ -229,19 +240,30 @@ export default function Index() {
               <DialogTitle className="flex items-center gap-3 text-xl font-bold"><span className="flex h-8 w-8 items-center justify-center border border-[#bdb3a0] bg-[#e7e1d5] text-[#214d76]"><Link2 className="h-4 w-4" /></span> Link de avaliação</DialogTitle>
             </DialogHeader>
             <div className="space-y-5 pt-5">
-              <p className="text-sm leading-6 text-[#5d6872]">Se você já tem o link de avaliação do Google, informe-o para experimentar o fluxo completo.</p>
-              <Input placeholder="https://g.page/r/..." value={linkAvaliacao} onChange={(e) => setLinkAvaliacao(e.target.value)} className="legacy-field px-3 text-sm" />
-              <Button onClick={() => handleProsseguir(true)} disabled={!linkAvaliacao.trim() || isSubmitting} className="legacy-button h-11 w-full font-bold">Continuar com o link</Button>
-              <button onClick={() => handleProsseguir(false)} disabled={isSubmitting} className="w-full text-sm font-semibold text-[#214d76] transition-colors hover:text-[#8b5427]">Não tenho o link agora</button>
-              <a
-                href={linkWhatsAppSia(`Olá! Vim do site do SIA e gostaria de ajuda para encontrar o link da minha empresa no Google.`)}
-                target="_blank"
-                rel="noreferrer"
-                className="flex w-full items-center justify-center gap-2 border-t border-[#d6cebf] pt-4 text-sm font-semibold text-[#214d76] transition-colors hover:text-[#8b5427]"
-              >
-                <MessageCircle className="h-4 w-4" />
-                Gostaria de ajuda para encontrar meu link
-              </a>
+              {etapaDialogLink === "inicial" ? (
+                <>
+                  <p className="text-sm leading-6 text-[#5d6872]">Se você já tem o link de avaliação do Google, informe-o para experimentar o fluxo completo.</p>
+                  <Input placeholder="https://g.page/r/..." value={linkAvaliacao} onChange={(e) => setLinkAvaliacao(e.target.value)} className="legacy-field px-3 text-sm" />
+                  <Button onClick={() => handleProsseguir(true)} disabled={!linkAvaliacao.trim() || isSubmitting} className="legacy-button h-11 w-full font-bold">Continuar com o link</Button>
+                  <button onClick={() => setEtapaDialogLink("pergunta_ajuda")} disabled={isSubmitting} className="w-full border-t border-[#d6cebf] pt-4 text-sm font-semibold text-[#214d76] transition-colors hover:text-[#8b5427]">Não tenho o link agora</button>
+                </>
+              ) : (
+                <>
+                  <p className="text-center text-sm font-semibold leading-6 text-[#233d55]">Gostaria de ajuda para encontrar o link da sua empresa no Google?</p>
+                  <a
+                    href={linkWhatsAppSia("Olá! Vim do site do SIA e gostaria de ajuda para encontrar o link da minha empresa no Google.")}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => handleProsseguir(false)}
+                    className="flex h-11 w-full items-center justify-center gap-2 bg-[#25D366] text-sm font-bold text-white transition-opacity hover:opacity-90"
+                  >
+                    <WhatsAppIcon className="h-4 w-4" />
+                    Sim, quero ajuda pelo WhatsApp
+                  </a>
+                  <Button onClick={() => handleProsseguir(false)} disabled={isSubmitting} variant="outline" className="legacy-button-secondary h-11 w-full font-semibold">Não, seguir sem o link</Button>
+                  <button onClick={() => setEtapaDialogLink("inicial")} disabled={isSubmitting} className="w-full border-t border-[#d6cebf] pt-4 text-sm font-medium text-[#5d6872] transition-colors hover:text-[#214d76]">Voltar</button>
+                </>
+              )}
             </div>
           </div>
         </DialogContent>
