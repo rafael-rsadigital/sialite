@@ -41,6 +41,8 @@ export default function Avaliacao() {
   const [produtoServico, setProdutoServico] = useState("");
   const [etapa, setEtapa] = useState<Etapa>("coleta");
   const [submitted, setSubmitted] = useState(false);
+  const [blocosVisiveis, setBlocosVisiveis] = useState(0);
+  const [progressoIniciado, setProgressoIniciado] = useState(false);
   const [copied, setCopied] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [nomeRetorno, setNomeRetorno] = useState("");
@@ -121,7 +123,6 @@ export default function Avaliacao() {
     try {
       const salvo = await salvarFeedback("google", "");
       if (!salvo) return;
-      if (empresa?.link_google) window.open(empresa.link_google, "_blank");
       setSubmitted(true);
     } finally {
       setEnviando(false);
@@ -186,6 +187,25 @@ export default function Avaliacao() {
 
   const isPositive = nota >= 4;
 
+  useEffect(() => {
+    if (!submitted || !isPositive) return;
+    setBlocosVisiveis(1);
+    const timers = [
+      window.setTimeout(() => setBlocosVisiveis(2), 2500),
+      window.setTimeout(() => setBlocosVisiveis(3), 5500),
+      window.setTimeout(() => setBlocosVisiveis(4), 8500),
+      window.setTimeout(() => {
+        if (empresa?.link_google) window.location.href = empresa.link_google;
+      }, 11000),
+    ];
+    const raf = requestAnimationFrame(() => setProgressoIniciado(true));
+    return () => {
+      timers.forEach(clearTimeout);
+      cancelAnimationFrame(raf);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitted, isPositive]);
+
   if (loading) {
     return <div className="min-h-screen paper-screen flex items-center justify-center"><div className="h-8 w-8 animate-spin border-2 border-[#687887] border-t-[#d6a66a]" /></div>;
   }
@@ -207,10 +227,18 @@ export default function Avaliacao() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[#d6a66a] bg-[#d6a66a]/10 text-[#d6a66a]"><CheckCircle2 className="h-7 w-7" /></div>
           {isPositive ? (
             <>
-              <p className="eyebrow mt-7 text-[#d6a66a]">Avaliação registrada</p>
-              <h1 className="display-title mt-3 text-3xl text-[#f5f0e5]">Obrigado! Abrimos o Google para você em outra aba.</h1>
-              <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-[#c1c9cf]">Complete sua avaliação por lá para ajudar mais pessoas a conhecerem a {empresa.nome_exibicao}. Se a aba não abriu, verifique o bloqueador de pop-ups do seu navegador.</p>
-              {empresa.link_google && <a href={empresa.link_google} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#d6a66a] underline underline-offset-4">Abrir avaliação do Google <ExternalLink className="h-3.5 w-3.5" /></a>}
+              <h1 className="display-title mt-7 min-h-[3.5rem] text-3xl text-[#f5f0e5]">
+                {blocosVisiveis >= 1 && <span className="animate-fade-in inline-flex items-center gap-2">Que bom que gostou do nosso atendimento <span aria-hidden="true">😄</span></span>}
+              </h1>
+              <div className="mx-auto mt-5 min-h-[6.5rem] max-w-md space-y-3 text-sm leading-6 text-[#c1c9cf]">
+                {blocosVisiveis >= 2 && <p className="animate-fade-in">Aguarde a nossa página no Google abrir para finalizar sua avaliação!</p>}
+                {blocosVisiveis >= 3 && <p className="animate-fade-in">Se puder, deixe um comentário sobre o serviço e atendimento, isso ajuda outras pessoas a encontrarem a {empresa.nome_exibicao}.</p>}
+                {blocosVisiveis >= 4 && <p className="animate-fade-in font-semibold text-[#f5f0e5]">Obrigado!</p>}
+              </div>
+              <div className="mx-auto mt-7 h-1.5 w-full max-w-xs overflow-hidden bg-white/10">
+                <div className="h-full bg-[#d6a66a]" style={{ width: progressoIniciado ? "100%" : "0%", transition: "width 11s linear" }} />
+              </div>
+              {empresa.link_google && <a href={empresa.link_google} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#d6a66a] underline underline-offset-4">Abrir agora <ExternalLink className="h-3.5 w-3.5" /></a>}
             </>
           ) : (
             <>
