@@ -173,11 +173,14 @@ export default function AdminRSA() {
   }, [autenticado]);
 
 
+  const [avaliacoesNovas, setAvaliacoesNovas] = useState<Record<string, number>>({});
+
   const fetchData = async () => {
     setLoading(true);
-    const [empresasRes, gestoresRes] = await Promise.all([
+    const [empresasRes, gestoresRes, novasRes] = await Promise.all([
       supabase.from("empresas").select("*").order("created_at", { ascending: false }),
       supabase.from("gestores").select("*").order("created_at", { ascending: false }),
+      supabase.rpc("contar_avaliacoes_novas"),
     ]);
 
     if (empresasRes.error) toast.error("Erro ao carregar empresas");
@@ -185,6 +188,14 @@ export default function AdminRSA() {
 
     if (gestoresRes.error) toast.error("Erro ao carregar gestores");
     else setGestores(gestoresRes.data || []);
+
+    if (!novasRes.error && novasRes.data) {
+      const mapa: Record<string, number> = {};
+      for (const linha of novasRes.data) {
+        if (linha.novas > 0) mapa[linha.empresa_id] = linha.novas;
+      }
+      setAvaliacoesNovas(mapa);
+    }
 
     setLoading(false);
   };
@@ -565,9 +576,16 @@ export default function AdminRSA() {
                                 }`}
                               >
                                 <TableCell className="text-white font-medium">
-                                  <div>
-                                    <p>{empresa.nome_exibicao}</p>
-                                    <p className="text-xs text-slate-500">{empresa.slug}</p>
+                                  <div className="flex items-center gap-2">
+                                    <div>
+                                      <p>{empresa.nome_exibicao}</p>
+                                      <p className="text-xs text-slate-500">{empresa.slug}</p>
+                                    </div>
+                                    {avaliacoesNovas[empresa.id] > 0 && (
+                                      <span className="flex h-5 min-w-5 items-center justify-center bg-red-500 px-1.5 text-[11px] font-bold text-white" title={`${avaliacoesNovas[empresa.id]} avaliação(ões) nova(s)`}>
+                                        {avaliacoesNovas[empresa.id]}
+                                      </span>
+                                    )}
                                   </div>
                                 </TableCell>
                                 <TableCell className="text-slate-400">

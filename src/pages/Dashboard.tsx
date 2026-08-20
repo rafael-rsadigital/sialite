@@ -71,6 +71,10 @@ export default function Dashboard() {
         return;
       }
 
+      if (perfil.papel === "administrador" || perfil.papel === "gestor") {
+        supabase.rpc("marcar_dashboard_visto", { p_empresa_id: empresaData.id });
+      }
+
       setEmpresa(empresaData);
       const { data: feedbacksData, error: feedbacksError } = await supabase
         .from("feedbacks")

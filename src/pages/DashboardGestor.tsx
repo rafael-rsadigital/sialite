@@ -34,6 +34,7 @@ export default function DashboardGestor() {
   const navigate = useNavigate();
   const [gestor, setGestor] = useState<Gestor | null>(null);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
+  const [avaliacoesNovas, setAvaliacoesNovas] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -84,6 +85,15 @@ export default function DashboardGestor() {
       toast.error("Erro ao carregar empresas");
     } else {
       setEmpresas(empresasData || []);
+    }
+
+    const { data: novasData, error: novasError } = await supabase.rpc("contar_avaliacoes_novas");
+    if (!novasError && novasData) {
+      const mapa: Record<string, number> = {};
+      for (const linha of novasData) {
+        if (linha.novas > 0) mapa[linha.empresa_id] = linha.novas;
+      }
+      setAvaliacoesNovas(mapa);
     }
 
     setLoading(false);
@@ -257,7 +267,14 @@ export default function DashboardGestor() {
                             }`}
                           >
                             <TableCell className="text-white font-medium">
-                              {empresa.nome_exibicao}
+                              <div className="flex items-center gap-2">
+                                <span>{empresa.nome_exibicao}</span>
+                                {avaliacoesNovas[empresa.id] > 0 && (
+                                  <span className="flex h-5 min-w-5 items-center justify-center bg-red-500 px-1.5 text-[11px] font-bold text-white" title={`${avaliacoesNovas[empresa.id]} avaliação(ões) nova(s)`}>
+                                    {avaliacoesNovas[empresa.id]}
+                                  </span>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell className="text-slate-400">
                               {empresa.slug}

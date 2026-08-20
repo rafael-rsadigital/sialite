@@ -231,6 +231,39 @@ export type Database = {
           },
         ]
       }
+      visualizacoes_dashboard: {
+        Row: {
+          empresa_id: string
+          perfil_id: string
+          visto_em: string
+        }
+        Insert: {
+          empresa_id: string
+          perfil_id: string
+          visto_em?: string
+        }
+        Update: {
+          empresa_id?: string
+          perfil_id?: string
+          visto_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visualizacoes_dashboard_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visualizacoes_dashboard_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       empresas_publicas: {
@@ -275,6 +308,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      contar_avaliacoes_novas: {
+        Args: never
+        Returns: { empresa_id: string; novas: number }[]
+      }
       designar_primeiro_administrador: {
         Args: { p_email: string }
         Returns: undefined
@@ -284,6 +321,10 @@ export type Database = {
       excluir_empresa: { Args: { p_empresa_id: string }; Returns: undefined }
       excluir_gestor: { Args: { p_gestor_id: string }; Returns: undefined }
       gestor_atual_id: { Args: never; Returns: string }
+      marcar_dashboard_visto: {
+        Args: { p_empresa_id: string }
+        Returns: undefined
+      }
       papel_atual: {
         Args: never
         Returns: Database["public"]["Enums"]["papel_sia"]
