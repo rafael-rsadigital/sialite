@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Shield, Lock, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, Zap, Building2, UserPlus, LayoutDashboard, Save, Trash2, Pencil, LogOut, Mail, KeyRound, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -222,6 +222,46 @@ export default function AdminRSA() {
     return new Date(dataVencimento) < new Date();
   };
 
+  // Filtros da lista de empresas
+  const [filtroNome, setFiltroNome] = useState("");
+  const [filtroGestor, setFiltroGestor] = useState<string>("todos");
+  const [filtroVencimento, setFiltroVencimento] = useState<string>("todos");
+
+  const empresasFiltradas = useMemo(() => {
+    return empresas.filter((empresa) => {
+      if (filtroNome.trim()) {
+        const termo = filtroNome.trim().toLowerCase();
+        const combina = empresa.nome_exibicao.toLowerCase().includes(termo) || empresa.slug.toLowerCase().includes(termo);
+        if (!combina) return false;
+      }
+
+      if (filtroGestor !== "todos") {
+        if (filtroGestor === "sem_gestor") {
+          if (empresa.gestor_id) return false;
+        } else if (empresa.gestor_id !== filtroGestor) {
+          return false;
+        }
+      }
+
+      if (filtroVencimento !== "todos") {
+        const vencida = isVencida(empresa.data_vencimento);
+        if (filtroVencimento === "vencidas" && !vencida) return false;
+        if (filtroVencimento === "em_dia" && vencida) return false;
+        if (filtroVencimento === "sem_data" && empresa.data_vencimento) return false;
+      }
+
+      return true;
+    });
+  }, [empresas, filtroNome, filtroGestor, filtroVencimento]);
+
+  const filtrosAtivos = filtroNome.trim() !== "" || filtroGestor !== "todos" || filtroVencimento !== "todos";
+
+  const limparFiltros = () => {
+    setFiltroNome("");
+    setFiltroGestor("todos");
+    setFiltroVencimento("todos");
+  };
+
   // Salvar Gestor
   const handleSaveGestor = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -443,6 +483,47 @@ export default function AdminRSA() {
                     <Building2 className="w-5 h-5 text-violet-400" />
                     Gestão de Clientes
                   </CardTitle>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="relative lg:col-span-2">
+                      <Input
+                        value={filtroNome}
+                        onChange={(e) => setFiltroNome(e.target.value)}
+                        placeholder="Buscar por nome ou slug da empresa..."
+                        className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
+                      />
+                    </div>
+                    <Select value={filtroGestor} onValueChange={setFiltroGestor}>
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                        <SelectValue placeholder="Gestor" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-white/10">
+                        <SelectItem value="todos" className="text-white hover:bg-white/10">Todos os gestores</SelectItem>
+                        <SelectItem value="sem_gestor" className="text-white hover:bg-white/10">Sem gestor</SelectItem>
+                        {gestores.map((gestor) => (
+                          <SelectItem key={gestor.id} value={gestor.id} className="text-white hover:bg-white/10">
+                            {gestor.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={filtroVencimento} onValueChange={setFiltroVencimento}>
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                        <SelectValue placeholder="Vencimento" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-white/10">
+                        <SelectItem value="todos" className="text-white hover:bg-white/10">Todos os vencimentos</SelectItem>
+                        <SelectItem value="vencidas" className="text-white hover:bg-white/10">Vencidas</SelectItem>
+                        <SelectItem value="em_dia" className="text-white hover:bg-white/10">Em dia</SelectItem>
+                        <SelectItem value="sem_data" className="text-white hover:bg-white/10">Sem data cadastrada</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {filtrosAtivos && (
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-xs text-slate-400">{empresasFiltradas.length} de {empresas.length} empresas</p>
+                      <button type="button" onClick={limparFiltros} className="text-xs font-medium text-violet-300 hover:text-violet-200">Limpar filtros</button>
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
                   {loading ? (
@@ -451,6 +532,8 @@ export default function AdminRSA() {
                     </div>
                   ) : empresas.length === 0 ? (
                     <p className="text-slate-400 text-center py-8">Nenhuma empresa cadastrada</p>
+                  ) : empresasFiltradas.length === 0 ? (
+                    <p className="text-slate-400 text-center py-8">Nenhuma empresa encontrada para esses filtros</p>
                   ) : (
                     <div className="overflow-x-auto">
                       <Table>
@@ -466,7 +549,7 @@ export default function AdminRSA() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {empresas.map((empresa) => {
+                          {empresasFiltradas.map((empresa) => {
                             const vencida = isVencida(empresa.data_vencimento);
                             const emDia = empresa.status_assinatura && !vencida;
                             

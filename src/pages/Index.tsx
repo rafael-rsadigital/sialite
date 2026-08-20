@@ -4,6 +4,7 @@ import {
   BarChart3,
   Check,
   Link2,
+  MessageCircle,
   MessageSquare,
   Play,
   ShieldCheck,
@@ -21,6 +22,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import siaLogo from "@/assets/sia-lite-logo.png";
+
+const WHATSAPP_SIA = "5512988052097";
+
+function linkWhatsAppSia(mensagem: string) {
+  return `https://wa.me/${WHATSAPP_SIA}?text=${encodeURIComponent(mensagem)}`;
+}
 
 const features = [
   {
@@ -77,6 +84,15 @@ export default function Index() {
 
   return (
     <main className="site-shell overflow-hidden">
+      <a
+        href={linkWhatsAppSia("Olá! Vim do site do SIA e gostaria de saber mais.")}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Falar no WhatsApp"
+        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-black/30 transition-transform hover:scale-105"
+      >
+        <MessageCircle className="h-7 w-7" fill="currentColor" strokeWidth={0} />
+      </a>
       <header className="masthead relative z-10">
         <nav className="mx-auto flex max-w-6xl items-center justify-between gap-5 px-5 py-4 lg:px-8">
           <div className="flex items-center gap-3">
@@ -141,7 +157,7 @@ export default function Index() {
                 <div className="mt-2 flex flex-col gap-3 sm:flex-row">
                   <Input
                     id="empresa"
-                    placeholder="Ex.: Clínica Reali"
+                    placeholder="Ex.: Clínica J. Fenix"
                     value={nomeEmpresa}
                     onChange={(e) => setNomeEmpresa(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleOpenLinkDialog()}
@@ -216,7 +232,16 @@ export default function Index() {
               <p className="text-sm leading-6 text-[#5d6872]">Se você já tem o link de avaliação do Google, informe-o para experimentar o fluxo completo.</p>
               <Input placeholder="https://g.page/r/..." value={linkAvaliacao} onChange={(e) => setLinkAvaliacao(e.target.value)} className="legacy-field px-3 text-sm" />
               <Button onClick={() => handleProsseguir(true)} disabled={!linkAvaliacao.trim() || isSubmitting} className="legacy-button h-11 w-full font-bold">Continuar com o link</Button>
-              <button onClick={() => handleProsseguir(false)} disabled={isSubmitting} className="w-full border-t border-[#d6cebf] pt-4 text-sm font-semibold text-[#214d76] transition-colors hover:text-[#8b5427]">Não tenho o link agora</button>
+              <button onClick={() => handleProsseguir(false)} disabled={isSubmitting} className="w-full text-sm font-semibold text-[#214d76] transition-colors hover:text-[#8b5427]">Não tenho o link agora</button>
+              <a
+                href={linkWhatsAppSia(`Olá! Vim do site do SIA e gostaria de ajuda para encontrar o link da minha empresa no Google.`)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex w-full items-center justify-center gap-2 border-t border-[#d6cebf] pt-4 text-sm font-semibold text-[#214d76] transition-colors hover:text-[#8b5427]"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Gostaria de ajuda para encontrar meu link
+              </a>
             </div>
           </div>
         </DialogContent>
