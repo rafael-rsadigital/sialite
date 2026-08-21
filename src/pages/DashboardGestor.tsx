@@ -237,7 +237,7 @@ export default function DashboardGestor() {
               {empresas.length === 0 ? (
                 <p className="text-slate-400 text-center py-8">Nenhuma empresa vinculada à sua conta</p>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
                   <Table>
                     <TableHeader>
                       <TableRow className="border-white/10 hover:bg-transparent">

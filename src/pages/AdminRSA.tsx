@@ -575,7 +575,7 @@ export default function AdminRSA() {
                   ) : empresasFiltradas.length === 0 ? (
                     <p className="text-slate-400 text-center py-8">Nenhuma empresa encontrada para esses filtros</p>
                   ) : (
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
                       <Table>
                         <TableHeader>
                           <TableRow className="border-white/10 hover:bg-transparent">
@@ -1051,7 +1051,7 @@ export default function AdminRSA() {
                   ) : leads.length === 0 ? (
                     <p className="text-slate-400 text-center py-8">Nenhum lead registrado ainda</p>
                   ) : (
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
                       <Table>
                         <TableHeader>
                           <TableRow className="border-white/10 hover:bg-transparent">
