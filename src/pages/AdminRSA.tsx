@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Shield, Lock, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, Zap, Building2, UserPlus, LayoutDashboard, Save, Trash2, Pencil, LogOut, Mail, KeyRound, BarChart3 } from "lucide-react";
+import { Shield, Lock, Users, AlertTriangle, DollarSign, ExternalLink, Calendar, Zap, Building2, UserPlus, LayoutDashboard, Save, Trash2, Pencil, LogOut, Mail, KeyRound, BarChart3, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,13 @@ interface Acesso {
   gestor_id: string | null;
   nome_exibicao: string | null;
   email: string | null;
+}
+
+interface LeadTeste {
+  id: string;
+  nome_empresa: string;
+  link_avaliacao: string | null;
+  created_at: string;
 }
 
 
@@ -174,13 +181,15 @@ export default function AdminRSA() {
 
 
   const [avaliacoesNovas, setAvaliacoesNovas] = useState<Record<string, number>>({});
+  const [leads, setLeads] = useState<LeadTeste[]>([]);
 
   const fetchData = async () => {
     setLoading(true);
-    const [empresasRes, gestoresRes, novasRes] = await Promise.all([
+    const [empresasRes, gestoresRes, novasRes, leadsRes] = await Promise.all([
       supabase.from("empresas").select("*").order("created_at", { ascending: false }),
       supabase.from("gestores").select("*").order("created_at", { ascending: false }),
       supabase.rpc("contar_avaliacoes_novas"),
+      supabase.from("leads_teste").select("*").order("created_at", { ascending: false }),
     ]);
 
     if (empresasRes.error) toast.error("Erro ao carregar empresas");
@@ -197,7 +206,23 @@ export default function AdminRSA() {
       setAvaliacoesNovas(mapa);
     }
 
+    if (leadsRes.error) toast.error("Erro ao carregar leads");
+    else setLeads(leadsRes.data || []);
+
     setLoading(false);
+  };
+
+  const deleteLead = async (id: string, nomeEmpresa: string) => {
+    const confirmado = window.confirm(`Excluir o lead "${nomeEmpresa}"?`);
+    if (!confirmado) return;
+
+    const { error } = await supabase.from("leads_teste").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao excluir lead");
+    } else {
+      setLeads((atual) => atual.filter((lead) => lead.id !== id));
+      toast.success("Lead excluído");
+    }
   };
 
   const toggleStatus = async (id: string, novoStatus: boolean) => {
@@ -434,6 +459,10 @@ export default function AdminRSA() {
               <TabsTrigger value="acessos" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
                 <KeyRound className="w-4 h-4 mr-2" />
                 Acessos
+              </TabsTrigger>
+              <TabsTrigger value="leads" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
+                <Target className="w-4 h-4 mr-2" />
+                Leads
               </TabsTrigger>
             </TabsList>
 
@@ -1000,6 +1029,69 @@ export default function AdminRSA() {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            {/* Leads Tab */}
+            <TabsContent value="leads" className="space-y-6">
+              <Card className="bg-white/5 backdrop-blur-sm border-white/10 shadow-xl">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Target className="w-5 h-5 text-violet-400" />
+                    Leads da Demonstração
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Empresas que testaram a demo na landing page — use para prospecção comercial.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
+                    </div>
+                  ) : leads.length === 0 ? (
+                    <p className="text-slate-400 text-center py-8">Nenhum lead registrado ainda</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-white/10 hover:bg-transparent">
+                            <TableHead className="text-slate-400">Empresa</TableHead>
+                            <TableHead className="text-slate-400">Link informado</TableHead>
+                            <TableHead className="text-slate-400">Data</TableHead>
+                            <TableHead className="text-right text-slate-400">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {leads.map((lead) => (
+                            <TableRow key={lead.id} className="border-white/10 hover:bg-white/5">
+                              <TableCell className="text-white font-medium">{lead.nome_empresa}</TableCell>
+                              <TableCell>
+                                {lead.link_avaliacao ? (
+                                  <a href={lead.link_avaliacao} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-cyan-300 hover:text-cyan-200 text-sm">
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                    Ver link
+                                  </a>
+                                ) : (
+                                  <span className="text-slate-500 text-sm">Não informou</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-slate-400 text-sm">
+                                {new Date(lead.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button size="sm" variant="outline" className="bg-white/5 border-red-500/30 text-red-300 hover:bg-red-500/10 hover:text-red-200" onClick={() => deleteLead(lead.id, lead.nome_empresa)}>
+                                  <Trash2 className="mr-1 h-3.5 w-3.5" />
+                                  Excluir
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
 
