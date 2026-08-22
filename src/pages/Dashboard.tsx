@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Star, BarChart3, MessageSquare, TrendingUp, Lock, ArrowUpRight } from "lucide-react";
+import { Star, BarChart3, MessageSquare, TrendingUp, Lock, Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FeedbackCard } from "@/components/FeedbackCard";
@@ -120,6 +120,34 @@ export default function Dashboard() {
 
   const mediaNotas = feedbacks.length > 0 ? (feedbacks.reduce((acc, f) => acc + f.nota, 0) / feedbacks.length).toFixed(1) : "0.0";
   const totalAvaliacoes = feedbacks.length;
+
+  const exportarCsv = () => {
+    const cabecalho = ["Data", "Nota", "Comentário", "Canal", "Cliente", "Celular", "E-mail", "Solicitou retorno", "Solucionado"];
+    const escapar = (valor: string) => `"${valor.replace(/"/g, '""')}"`;
+    const linhas = feedbacks.map((f) => [
+      new Date(f.created_at).toLocaleString("pt-BR"),
+      String(f.nota),
+      f.comentario || "",
+      f.tipo_envio,
+      f.nome_cliente || "",
+      f.telefone_cliente || "",
+      f.email_cliente || "",
+      f.solicitou_retorno ? "Sim" : "Não",
+      f.solicitou_retorno ? (f.solucionado ? "Sim" : "Não") : "",
+    ].map(escapar).join(","));
+    const csv = "\uFEFF" + [cabecalho.map(escapar).join(","), ...linhas].join("\r\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const nomeArquivo = `avaliacoes-${(empresa?.nome_exibicao || "sia").toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.setAttribute("download", nomeArquivo);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
   const avaliacoesPositivas = feedbacks.filter((f) => f.nota >= 4).length;
   const percentualPositivo = totalAvaliacoes > 0 ? Math.round((avaliacoesPositivas / totalAvaliacoes) * 100) : 0;
 
@@ -156,7 +184,17 @@ export default function Dashboard() {
               <h2 className="mt-2 text-xl font-bold text-[#f5f0e5]">Últimas avaliações</h2>
               <p className="mt-1 text-xs text-[#aeb8c0]">Mais recentes primeiro</p>
             </div>
-            <ArrowUpRight className="h-5 w-5 text-[#d6a66a]" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={feedbacks.length === 0}
+              onClick={exportarCsv}
+              className="border-[#526170] bg-white/5 text-[#d4dadd] hover:bg-white/10 hover:text-white"
+            >
+              <Download className="mr-1.5 h-3.5 w-3.5" />
+              Exportar CSV
+            </Button>
           </div>
           {feedbacks.length === 0 ? (
             <Card className="portal-panel shadow-none">
