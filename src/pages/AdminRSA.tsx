@@ -443,24 +443,24 @@ export default function AdminRSA() {
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="animate-fade-in">
-            <TabsList className="bg-white/5 border border-white/10 p-1 mb-6">
-              <TabsTrigger value="dashboard" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
+            <TabsList className="max-w-full justify-start overflow-x-auto [-webkit-overflow-scrolling:touch] bg-white/5 border border-white/10 p-1 mb-6">
+              <TabsTrigger value="dashboard" className="shrink-0 data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
                 <LayoutDashboard className="w-4 h-4 mr-2" />
                 Dashboard
               </TabsTrigger>
-              <TabsTrigger value="gestores" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
+              <TabsTrigger value="gestores" className="shrink-0 data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
                 <UserPlus className="w-4 h-4 mr-2" />
                 Gestores
               </TabsTrigger>
-              <TabsTrigger value="empresas" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
+              <TabsTrigger value="empresas" className="shrink-0 data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
                 <Building2 className="w-4 h-4 mr-2" />
                 Cadastro Empresas
               </TabsTrigger>
-              <TabsTrigger value="acessos" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
+              <TabsTrigger value="acessos" className="shrink-0 data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
                 <KeyRound className="w-4 h-4 mr-2" />
                 Acessos
               </TabsTrigger>
-              <TabsTrigger value="leads" className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
+              <TabsTrigger value="leads" className="shrink-0 data-[state=active]:bg-violet-500/20 data-[state=active]:text-white text-slate-400">
                 <Target className="w-4 h-4 mr-2" />
                 Leads
               </TabsTrigger>
