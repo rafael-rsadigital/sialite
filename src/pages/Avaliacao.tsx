@@ -316,7 +316,7 @@ export default function Avaliacao() {
               <button
                 onClick={handleEscolherGoogle}
                 disabled={enviando}
-                className="w-full border border-[#8793a0] bg-[#fbf9f4] p-5 text-left shadow-[inset_0_1px_0_rgb(18_34_53_/_0.06)] transition-colors hover:border-[#214d76] disabled:opacity-60"
+                className="w-full border border-[#8793a0] bg-white p-5 text-left shadow-[inset_0_1px_0_rgb(18_34_53_/_0.06)] transition-colors hover:border-[#214d76] disabled:opacity-60"
               >
                 <p className="text-base font-bold text-[#233d55]">Publicar no Google</p>
                 <p className="mt-1.5 text-sm leading-6 text-slate-500">Sua avaliação ajuda outras pessoas a conhecerem a {empresa.nome_exibicao}.</p>
@@ -324,7 +324,7 @@ export default function Avaliacao() {
               <button
                 onClick={handleEscolherEmpresa}
                 disabled={enviando}
-                className="w-full border border-[#8793a0] bg-[#fbf9f4] p-5 text-left shadow-[inset_0_1px_0_rgb(18_34_53_/_0.06)] transition-colors hover:border-[#214d76] disabled:opacity-60"
+                className="w-full border border-[#8793a0] bg-white p-5 text-left shadow-[inset_0_1px_0_rgb(18_34_53_/_0.06)] transition-colors hover:border-[#214d76] disabled:opacity-60"
               >
                 <p className="text-base font-bold text-[#233d55]">Enviar direto pra {empresa.nome_exibicao}</p>
                 <p className="mt-1.5 text-sm leading-6 text-slate-500">Prefere só avisar a equipe, sem publicar? Também podemos te dar um retorno.</p>
