@@ -322,7 +322,10 @@ export default function DashboardGestor() {
                                 variant="outline"
                                 className="bg-white/5 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 hover:text-cyan-200"
                               >
-                                <Link to={`/dashboard/${empresa.hash_secreto}`}>
+                                <Link
+                                  to={`/dashboard/${empresa.hash_secreto}`}
+                                  onClick={() => setAvaliacoesNovas((atual) => { const { [empresa.id]: _omitido, ...resto } = atual; return resto; })}
+                                >
                                   <BarChart3 className="w-4 h-4 mr-1" />
                                   Ver dashboard
                                 </Link>
