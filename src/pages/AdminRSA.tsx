@@ -225,6 +225,19 @@ export default function AdminRSA() {
     }
   };
 
+  const marcarComoLida = async (empresaId: string) => {
+    const { error } = await supabase.rpc("marcar_dashboard_visto", { p_empresa_id: empresaId });
+    if (error) {
+      toast.error("Erro ao marcar como lida: " + error.message);
+      return;
+    }
+    setAvaliacoesNovas((atual) => {
+      const { [empresaId]: _omitido, ...resto } = atual;
+      return resto;
+    });
+    toast.success("Marcado como lido");
+  };
+
   const toggleStatus = async (id: string, novoStatus: boolean) => {
     const { error } = await supabase
       .from("empresas")
@@ -611,9 +624,14 @@ export default function AdminRSA() {
                                       <p className="text-xs text-slate-500">{empresa.slug}</p>
                                     </div>
                                     {avaliacoesNovas[empresa.id] > 0 && (
-                                      <span className="flex h-5 min-w-5 items-center justify-center bg-red-500 px-1.5 text-[11px] font-bold text-white" title={`${avaliacoesNovas[empresa.id]} avaliação(ões) nova(s)`}>
-                                        {avaliacoesNovas[empresa.id]}
-                                      </span>
+                                      <>
+                                        <span className="flex h-5 min-w-5 items-center justify-center bg-red-500 px-1.5 text-[11px] font-bold text-white" title={`${avaliacoesNovas[empresa.id]} avaliação(ões) nova(s)`}>
+                                          {avaliacoesNovas[empresa.id]}
+                                        </span>
+                                        <button type="button" onClick={() => marcarComoLida(empresa.id)} className="text-[10px] font-medium text-violet-300 hover:text-violet-200 hover:underline">
+                                          Marcar como lida
+                                        </button>
+                                      </>
                                     )}
                                   </div>
                                 </TableCell>

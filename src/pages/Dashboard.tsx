@@ -72,7 +72,10 @@ export default function Dashboard() {
       }
 
       if (perfil.papel === "administrador" || perfil.papel === "gestor") {
-        supabase.rpc("marcar_dashboard_visto", { p_empresa_id: empresaData.id });
+        const { error: visoError } = await supabase.rpc("marcar_dashboard_visto", { p_empresa_id: empresaData.id });
+        if (visoError) {
+          console.error("Falha ao marcar dashboard como visto:", visoError);
+        }
       }
 
       setEmpresa(empresaData);
