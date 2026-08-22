@@ -40,28 +40,28 @@ const features = [
   {
     icon: Star,
     number: "01",
-    title: "Mais avaliações positivas",
-    desc: "Facilite o caminho para clientes satisfeitos compartilharem sua experiência no Google.",
+    title: "Feedback organizado",
+    desc: "Reúna notas e comentários dos seus clientes em um único lugar.",
   },
   {
     icon: MessageSquare,
     number: "02",
-    title: "Feedback direto para a empresa",
-    desc: "Quando a experiência não foi boa, o cliente encontra um canal privado para falar com você.",
+    title: "Mais facilidade para compartilhar",
+    desc: "Ofereça ao cliente uma experiência simples para escolher entre publicar no Google ou enviar seu feedback diretamente para a empresa.",
   },
   {
     icon: BarChart3,
     number: "03",
-    title: "Acompanhamento simples",
-    desc: "Veja notas, comentários e origem dos feedbacks em um único painel.",
+    title: "Retorno quando necessário",
+    desc: "Quando um cliente quiser falar com a empresa, o SIA registra a solicitação e organiza o acompanhamento no painel.",
   },
 ];
 
 const steps = [
   { number: "01", title: "Cliente acessa", desc: "Por QR Code ou link exclusivo da empresa." },
-  { number: "02", title: "Escolhe uma nota", desc: "Uma experiência rápida e clara no celular." },
-  { number: "03", title: "SIA direciona", desc: "O próximo passo muda de acordo com a avaliação." },
-  { number: "04", title: "Você acompanha", desc: "Os feedbacks ficam organizados no seu painel." },
+  { number: "02", title: "Compartilha sua experiência", desc: "Dá uma nota e pode contar um pouco mais sobre o atendimento." },
+  { number: "03", title: "Escolhe como compartilhar", desc: "Pode publicar no Google ou enviar o feedback diretamente para a empresa." },
+  { number: "04", title: "Você acompanha", desc: "Notas, comentários e solicitações de retorno ficam organizados no seu painel." },
 ];
 
 export default function Index() {
@@ -145,10 +145,10 @@ export default function Index() {
               A opinião do cliente merece um processo à altura.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-7 text-[#52606b] lg:text-lg">
-              O SIA organiza o caminho entre a avaliação, o Google e o retorno privado. Sem ruído, sem improviso e com uma experiência natural para quem avalia.
+              O SIA organiza a experiência de avaliação do cliente em um único fluxo. Ele registra o feedback, permite que o cliente escolha como deseja compartilhar sua experiência e ajuda sua empresa a acompanhar quem precisa de atenção.
             </p>
             <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 border-y border-[#c9c0b0] py-4 text-xs font-semibold text-[#31495f]">
-              {["Demonstração gratuita", "Sem cartão", "Desenhado para celular"].map((item) => (
+              {["Demonstração gratuita", "Sem cartão"].map((item) => (
                 <span key={item} className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-[#8b5427]" />{item}</span>
               ))}
             </div>
@@ -189,7 +189,7 @@ export default function Index() {
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-8 border-b border-[#c9c0b0] pb-8 md:grid-cols-[.75fr_1.25fr] md:items-end">
             <p className="eyebrow">Por que usar o SIA</p>
-            <h2 className="display-title max-w-2xl text-3xl text-[#122235] sm:text-4xl">Mais clareza para a sua reputação e mais cuidado com a experiência do cliente.</h2>
+            <h2 className="display-title max-w-2xl text-3xl text-[#122235] sm:text-4xl">Transforme opiniões em informação para o seu negócio.</h2>
           </div>
           <div className="grid border-l border-[#c9c0b0] md:grid-cols-3">
             {features.map((feature) => (
@@ -222,7 +222,7 @@ export default function Index() {
 
       <section className="ink-shell border-y border-[#122235] px-5 py-16 lg:px-8 lg:py-20">
         <div className="mx-auto grid max-w-6xl gap-8 border border-[#6c7882] bg-[#122235]/80 p-7 sm:p-10 md:grid-cols-[1fr_auto] md:items-center">
-          <div><p className="eyebrow text-[#d6a66a]">Próximo passo</p><h2 className="display-title mt-3 max-w-2xl text-3xl text-[#f5f0e5] sm:text-4xl">Veja como seus clientes vão avaliar.</h2><p className="mt-4 max-w-xl text-sm leading-6 text-[#c3c8c7]">Faça uma demonstração gratuita e conheça o fluxo completo do SIA antes de começar.</p></div>
+          <div><p className="eyebrow text-[#d6a66a]">Próximo passo</p><h2 className="display-title mt-3 max-w-2xl text-3xl text-[#f5f0e5] sm:text-4xl">Veja o SIA na prática.</h2><p className="mt-4 max-w-xl text-sm leading-6 text-[#c3c8c7]">Faça uma demonstração gratuita e conheça o fluxo completo do SIA antes de começar.</p></div>
           <Button onClick={() => document.querySelector<HTMLInputElement>("#empresa")?.focus()} className="legacy-button h-12 px-6 font-bold">
             Testar gratuitamente <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
