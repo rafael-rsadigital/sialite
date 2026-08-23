@@ -145,8 +145,30 @@ export default function Avaliacao() {
     if (enviando) return;
     setEnviando(true);
     try {
+      const texto = comentario.trim();
+
+      // O Google não tem um jeito confiável de pré-preencher o campo de
+      // comentário via link — por isso copiamos pra área de transferência
+      // pra pessoa só colar (Ctrl+V) na hora de escrever lá. Só faz sentido
+      // se ela realmente escreveu algo.
+      if (texto) {
+        try {
+          await navigator.clipboard.writeText(texto);
+        } catch {
+          const textArea = document.createElement("textarea");
+          textArea.value = texto;
+          textArea.style.position = "fixed";
+          textArea.style.left = "-999999px";
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
+        }
+      }
+
       // Texto transportado literalmente, sem reescrever/resumir/melhorar.
-      const salvo = await salvarFeedback("google", comentario.trim());
+      const salvo = await salvarFeedback("google", texto);
       if (!salvo) return;
       setCaminho("google");
       setSubmitted(true);
@@ -255,7 +277,13 @@ export default function Avaliacao() {
               </h1>
               <div className="mx-auto mt-5 min-h-[6.5rem] max-w-md space-y-3 text-sm leading-6 text-[#c1c9cf]">
                 {blocosVisiveis >= 2 && <p className="animate-fade-in">Aguarde a nossa página no Google abrir para você publicar.</p>}
-                {blocosVisiveis >= 3 && <p className="animate-fade-in">Seu comentário ajuda outras pessoas a conhecerem a {empresa.nome_exibicao}.</p>}
+                {blocosVisiveis >= 3 && (
+                  <p className="animate-fade-in">
+                    {comentario.trim()
+                      ? <>Comentário copiado! Cole <span className="font-semibold text-[#f5f0e5]">(Ctrl+V)</span> no campo de avaliação do Google — isso ajuda outras pessoas a conhecerem a {empresa.nome_exibicao}.</>
+                      : <>Sua avaliação ajuda outras pessoas a conhecerem a {empresa.nome_exibicao}.</>}
+                  </p>
+                )}
                 {blocosVisiveis >= 4 && <p className="animate-fade-in font-semibold text-[#f5f0e5]">Obrigado!</p>}
               </div>
               <div className="mx-auto mt-7 h-1.5 w-full max-w-xs overflow-hidden bg-white/10">
