@@ -48,7 +48,7 @@ export default function Avaliacao() {
   const [etapa, setEtapa] = useState<Etapa>("coleta");
   const [submitted, setSubmitted] = useState(false);
   const [caminho, setCaminho] = useState<Caminho>(null);
-  const [palavrasVisiveis, setPalavrasVisiveis] = useState(0);
+  const [blocosVisiveis, setBlocosVisiveis] = useState(0);
   const [progressoIniciado, setProgressoIniciado] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [nomeRetorno, setNomeRetorno] = useState("");
@@ -243,28 +243,27 @@ export default function Avaliacao() {
     }
   };
 
-  const textoGoogle = (() => {
+  const blocosGoogle = (() => {
     const nomeEmpresa = empresa?.nome_exibicao ?? "nossa empresa";
-    const partes = ["estamos abrindo nossa página no Google para você publicar sua avaliação."];
+    const blocos = ["estamos abrindo nossa página no Google para você publicar sua avaliação."];
     if (comentario.trim()) {
-      partes.push("Seu comentário foi copiado automaticamente, basta colar e publicar.");
+      blocos.push("Seu comentário foi copiado automaticamente, basta colar e publicar.");
     }
-    partes.push(`Sua contribuição ajudará outras pessoas a conhecerem a ${nomeEmpresa}.`);
-    partes.push("Obrigado 🙂");
-    return partes.join(" ").split(" ");
+    blocos.push(`Sua contribuição ajudará outras pessoas a conhecerem a ${nomeEmpresa}. Obrigado 🙂`);
+    return blocos;
   })();
 
   useEffect(() => {
     if (!submitted || caminho !== "google") return;
-    setPalavrasVisiveis(0);
+    setBlocosVisiveis(0);
 
     const atrasoInicial = 1300; // "Aguarde..." sozinho, com os 3 pontinhos
-    const duracaoLeitura = 7400; // janela pra revelar o texto, palavra por palavra
-    const intervalo = duracaoLeitura / Math.max(textoGoogle.length, 1);
+    const janela = 8200; // tempo restante até pouco antes do redirecionamento, dividido entre os blocos
+    const intervalo = janela / Math.max(blocosGoogle.length, 1);
     const timers: number[] = [];
 
-    for (let i = 1; i <= textoGoogle.length; i++) {
-      timers.push(window.setTimeout(() => setPalavrasVisiveis(i), atrasoInicial + i * intervalo));
+    for (let i = 1; i <= blocosGoogle.length; i++) {
+      timers.push(window.setTimeout(() => setBlocosVisiveis(i), atrasoInicial + (i - 1) * intervalo));
     }
 
     timers.push(window.setTimeout(() => {
@@ -309,11 +308,11 @@ export default function Avaliacao() {
                     <span className="loading-dot">.</span>
                   </span>
                 </p>
-                <p className="mt-4 min-h-[6.5rem] text-sm leading-6 text-[#c1c9cf]">
-                  {textoGoogle.slice(0, palavrasVisiveis).map((palavra, indice) => (
-                    <span key={indice} className="animate-fade-in mr-1 inline-block">{palavra}</span>
+                <div className="mt-4 min-h-[6.5rem] space-y-3 text-sm leading-6 text-[#c1c9cf]">
+                  {blocosGoogle.slice(0, blocosVisiveis).map((bloco, indice) => (
+                    <p key={indice} className="animate-fade-in">{bloco}</p>
                   ))}
-                </p>
+                </div>
               </div>
               <div className="mx-auto mt-3 h-1.5 w-full max-w-xs overflow-hidden bg-white/10">
                 <div className="h-full bg-[#d6a66a]" style={{ width: progressoIniciado ? "100%" : "0%", transition: "width 11s linear" }} />
