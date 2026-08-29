@@ -48,7 +48,7 @@ export default function Avaliacao() {
   const [etapa, setEtapa] = useState<Etapa>("coleta");
   const [submitted, setSubmitted] = useState(false);
   const [caminho, setCaminho] = useState<Caminho>(null);
-  const [blocosVisiveis, setBlocosVisiveis] = useState(0);
+  const [palavrasVisiveis, setPalavrasVisiveis] = useState(0);
   const [progressoIniciado, setProgressoIniciado] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [nomeRetorno, setNomeRetorno] = useState("");
@@ -243,17 +243,34 @@ export default function Avaliacao() {
     }
   };
 
+  const textoGoogle = (() => {
+    const nomeEmpresa = empresa?.nome_exibicao ?? "nossa empresa";
+    const partes = ["estamos abrindo nossa página no Google para você publicar sua avaliação."];
+    if (comentario.trim()) {
+      partes.push("Seu comentário foi copiado automaticamente, basta colar e publicar.");
+    }
+    partes.push(`Sua contribuição ajudará outras pessoas a conhecerem a ${nomeEmpresa}.`);
+    partes.push("Obrigado 🙂");
+    return partes.join(" ").split(" ");
+  })();
+
   useEffect(() => {
     if (!submitted || caminho !== "google") return;
-    setBlocosVisiveis(1);
-    const timers = [
-      window.setTimeout(() => setBlocosVisiveis(2), 1400),
-      window.setTimeout(() => setBlocosVisiveis(3), 5000),
-      window.setTimeout(() => setBlocosVisiveis(4), 8200),
-      window.setTimeout(() => {
-        if (empresa?.link_google) window.location.href = empresa.link_google;
-      }, 11000),
-    ];
+    setPalavrasVisiveis(0);
+
+    const atrasoInicial = 1300; // "Aguarde..." sozinho, com os 3 pontinhos
+    const duracaoLeitura = 7400; // janela pra revelar o texto, palavra por palavra
+    const intervalo = duracaoLeitura / Math.max(textoGoogle.length, 1);
+    const timers: number[] = [];
+
+    for (let i = 1; i <= textoGoogle.length; i++) {
+      timers.push(window.setTimeout(() => setPalavrasVisiveis(i), atrasoInicial + i * intervalo));
+    }
+
+    timers.push(window.setTimeout(() => {
+      if (empresa?.link_google) window.location.href = empresa.link_google;
+    }, 11000));
+
     const raf = requestAnimationFrame(() => setProgressoIniciado(true));
     return () => {
       timers.forEach(clearTimeout);
@@ -283,21 +300,22 @@ export default function Avaliacao() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[#d6a66a] bg-[#d6a66a]/10 text-[#d6a66a]"><CheckCircle2 className="h-7 w-7" /></div>
           {caminho === "google" ? (
             <>
-              <h1 className="display-title mt-7 min-h-[5.5rem] text-2xl text-[#f5f0e5] sm:text-3xl">
-                {blocosVisiveis >= 1 && <span className="animate-fade-in block">Aguarde...</span>}
-                {blocosVisiveis >= 2 && <span className="animate-fade-in mt-1 inline-flex items-center gap-2">estamos abrindo nossa página no Google para você publicar sua avaliação <span aria-hidden="true">🙂</span></span>}
-              </h1>
-              <div className="mx-auto mt-5 min-h-[6.5rem] max-w-md space-y-3 text-sm leading-6 text-[#c1c9cf]">
-                {blocosVisiveis >= 3 && (
-                  <p className="animate-fade-in">
-                    {comentario.trim()
-                      ? "Seu comentário foi copiado automaticamente, basta colar e publicar."
-                      : "Sua avaliação ajuda outras pessoas a conhecerem a nossa empresa."}
-                  </p>
-                )}
-                {blocosVisiveis >= 4 && <p className="animate-fade-in">Sua contribuição ajudará outras pessoas a conhecerem a {empresa.nome_exibicao}.</p>}
+              <div className="mx-auto mt-7 max-w-md text-left">
+                <p className="flex items-center gap-1 text-[1.35rem] font-bold leading-tight text-[#f5f0e5] sm:text-[1.69rem]">
+                  Aguarde
+                  <span className="inline-flex gap-0.5" aria-hidden="true">
+                    <span className="loading-dot">.</span>
+                    <span className="loading-dot">.</span>
+                    <span className="loading-dot">.</span>
+                  </span>
+                </p>
+                <p className="mt-4 min-h-[6.5rem] text-sm leading-6 text-[#c1c9cf]">
+                  {textoGoogle.slice(0, palavrasVisiveis).map((palavra, indice) => (
+                    <span key={indice} className="animate-fade-in mr-1 inline-block">{palavra}</span>
+                  ))}
+                </p>
               </div>
-              <div className="mx-auto mt-7 h-1.5 w-full max-w-xs overflow-hidden bg-white/10">
+              <div className="mx-auto mt-3 h-1.5 w-full max-w-xs overflow-hidden bg-white/10">
                 <div className="h-full bg-[#d6a66a]" style={{ width: progressoIniciado ? "100%" : "0%", transition: "width 11s linear" }} />
               </div>
               {empresa.link_google && <a href={empresa.link_google} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#d6a66a] underline underline-offset-4">Abrir agora <ExternalLink className="h-3.5 w-3.5" /></a>}
