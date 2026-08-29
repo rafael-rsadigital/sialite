@@ -146,6 +146,7 @@ export default function Avaliacao() {
     setEnviando(true);
     try {
       const texto = comentario.trim();
+      let copiado = false;
 
       // O Google não tem um jeito confiável de pré-preencher o campo de
       // comentário via link — por isso copiamos pra área de transferência
@@ -154,16 +155,26 @@ export default function Avaliacao() {
       if (texto) {
         try {
           await navigator.clipboard.writeText(texto);
-        } catch {
-          const textArea = document.createElement("textarea");
-          textArea.value = texto;
-          textArea.style.position = "fixed";
-          textArea.style.left = "-999999px";
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textArea);
+          copiado = true;
+        } catch (erroClipboardApi) {
+          try {
+            const textArea = document.createElement("textarea");
+            textArea.value = texto;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            copiado = document.execCommand("copy");
+            document.body.removeChild(textArea);
+          } catch (erroFallback) {
+            console.error("Falha ao copiar comentário (clipboard API e fallback):", erroClipboardApi, erroFallback);
+          }
+        }
+        if (copiado) {
+          toast.success("Comentário copiado! Cole no campo de avaliação do Google.");
+        } else {
+          toast.error("Não foi possível copiar automaticamente. Copie seu comentário manualmente antes de continuar.");
         }
       }
 
@@ -236,9 +247,8 @@ export default function Avaliacao() {
     if (!submitted || caminho !== "google") return;
     setBlocosVisiveis(1);
     const timers = [
-      window.setTimeout(() => setBlocosVisiveis(2), 2500),
-      window.setTimeout(() => setBlocosVisiveis(3), 5500),
-      window.setTimeout(() => setBlocosVisiveis(4), 8500),
+      window.setTimeout(() => setBlocosVisiveis(2), 3500),
+      window.setTimeout(() => setBlocosVisiveis(3), 7000),
       window.setTimeout(() => {
         if (empresa?.link_google) window.location.href = empresa.link_google;
       }, 11000),
@@ -272,19 +282,18 @@ export default function Avaliacao() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[#d6a66a] bg-[#d6a66a]/10 text-[#d6a66a]"><CheckCircle2 className="h-7 w-7" /></div>
           {caminho === "google" ? (
             <>
-              <h1 className="display-title mt-7 min-h-[3.5rem] text-3xl text-[#f5f0e5]">
-                {blocosVisiveis >= 1 && <span className="animate-fade-in inline-flex items-center gap-2">Obrigado por compartilhar sua avaliação <span aria-hidden="true">🙂</span></span>}
+              <h1 className="display-title mt-7 min-h-[3.5rem] text-2xl text-[#f5f0e5] sm:text-3xl">
+                {blocosVisiveis >= 1 && <span className="animate-fade-in inline-flex items-center gap-2">Aguarde... estamos abrindo nossa página no Google para você publicar sua avaliação <span aria-hidden="true">🙂</span></span>}
               </h1>
               <div className="mx-auto mt-5 min-h-[6.5rem] max-w-md space-y-3 text-sm leading-6 text-[#c1c9cf]">
-                {blocosVisiveis >= 2 && <p className="animate-fade-in">Aguarde a nossa página no Google abrir para você publicar.</p>}
-                {blocosVisiveis >= 3 && (
+                {blocosVisiveis >= 2 && (
                   <p className="animate-fade-in">
                     {comentario.trim()
-                      ? <>Comentário copiado! Cole <span className="font-semibold text-[#f5f0e5]">(Ctrl+V)</span> no campo de avaliação do Google — isso ajuda outras pessoas a conhecerem a {empresa.nome_exibicao}.</>
-                      : <>Sua avaliação ajuda outras pessoas a conhecerem a {empresa.nome_exibicao}.</>}
+                      ? "Seu comentário foi copiado automaticamente, basta colar e publicar."
+                      : "Sua avaliação ajuda outras pessoas a conhecerem a nossa empresa."}
                   </p>
                 )}
-                {blocosVisiveis >= 4 && <p className="animate-fade-in font-semibold text-[#f5f0e5]">Obrigado!</p>}
+                {blocosVisiveis >= 3 && <p className="animate-fade-in">Sua contribuição ajudará outras pessoas a conhecerem a {empresa.nome_exibicao}.</p>}
               </div>
               <div className="mx-auto mt-7 h-1.5 w-full max-w-xs overflow-hidden bg-white/10">
                 <div className="h-full bg-[#d6a66a]" style={{ width: progressoIniciado ? "100%" : "0%", transition: "width 11s linear" }} />
